@@ -9,7 +9,7 @@ const menuItems = [
     { path: 'transactions', label: 'Transactions', icon: '💰' },
 ];
 
-export default function Ledger() {
+const Ledger: React.FC = () => {
     return (
         <div className="flex min-h-screen bg-gray-50">
             <aside className="w-64 bg-white border-r border-gray-200 p-6">
@@ -35,4 +35,6 @@ export default function Ledger() {
             </main>
         </div>
     );
-} 
+}
+
+export default Ledger; 

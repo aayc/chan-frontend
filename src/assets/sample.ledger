@@ -1,0 +1,1380 @@
+~ Monthly
+    budget:expenses:dining               $200.00
+    budget:expenses:commute              $100.00
+    budget:expenses:gas                  $100.00
+    budget:expenses:gifts                $200.00
+    budget:expenses:groceries            $200.00
+    budget:expenses:rent                 $2310.07
+    budget:monthly
+
+~ Yearly
+    budget:expenses:travel               $10000
+    budget:expenses:insurance            $2000
+    budget:expenses:car:maintenance      $1000
+    budget:yearly
+
+; 2025 goals:
+; - total assets: $700,000 (not counting by end of year $500k of Harvey equity)
+; - joint:expenses fraction of income: 0.4
+2025/01/01 Opening Balances
+    aaron:assets:bank:synchrony            $23,660.70
+    joint:assets:bank:ally                 $3410.00
+    joint:assets:bank:raisin               $46,266.79
+    joint:assets:bank:bofa                 $200.00
+    joint:assets:bonds:savings             $23,598.00
+    joint:assets:investments:rothira       $92,623.85
+    joint:assets:investments:vanguard      $141,955.81
+    joint:assets:investments:wealthfront   $16,359.91
+    joint:assets:investments:401k          $149,413.10
+    joint:assets:investments:fidelity      $15,673.89
+    joint:assets:investments:hsa           $24,357.63
+    joint:assets:investments:merrill       $40,579.20
+    joint:assets:investments:401k_2        $26,501.92
+    joint:liabilities:venturex            -$1,805.88
+    joint:liabilities:bilt                -$2,757.89
+    joint:liabilities:ccr                 -$44.51
+    joint:liabilities:bonvoy              -$40.83
+    joint:liabilities:syw                 -$441.66
+    joint:liabilities:customcash          -$637.83
+    equity:opening_balances
+
+2025/01/02 Ally | Fidelity Dividend
+    joint:assets:bank:ally                          $30.92
+    joint:income:dividends
+
+2025/01/02 Synchrony | Vanguard Buy Investment
+    joint:assets:investments:vanguard                 $3,000.00
+    aaron:assets:bank:synchrony
+
+2025/01/02 Venture X | Lonely
+    joint:expenses:travel:dining                    $12.34
+    joint:liabilities:venturex
+
+2025/01/02 Venture X | SSAW Garden Hotel Beijing
+    joint:expenses:travel:hotel                     $80.80
+    joint:liabilities:venturex
+
+2025/01/02 Venture X | H&M Return
+    joint:expenses:clothing                         -$140.26
+    joint:liabilities:venturex
+
+2025/01/02 Venture X | Keeps Consult
+    aaron:expenses:healthcare                       $5.00
+    joint:liabilities:venturex
+
+2025/01/02 Venture X | Beijing Metro
+    joint:expenses:travel:transportation            $1.23
+    joint:liabilities:venturex
+
+2025/01/02 Venture X | Beijing Guang
+    joint:expenses:travel:dining                    $5.49
+    joint:liabilities:venturex
+
+2025/01/02 SYW | Amazon Extensible USB C
+    joint:expenses:stuff                           $10.59
+    joint:liabilities:syw
+
+2025/01/03 SYW | Amazon Gift Card
+    joint:expenses:misc                            $310.00
+    joint:liabilities:syw
+
+2025/01/03 Venture X | QR Code Payment
+    joint:expenses:travel:dining                    $4.12
+    joint:liabilities:venturex
+
+2025/01/03 Venture X | Uniqlo
+    joint:expenses:clothing                         $144.91
+    joint:liabilities:venturex
+
+2025/01/03 Venture X | Baozhu Cheese
+    joint:expenses:travel:dining                    $3.43
+    joint:liabilities:venturex
+2025/01/03 CCR | Statement Credit
+    joint:liabilities:ccr                           $4.85
+    joint:income:rewards
+
+2025/01/03 CCR | Replacement Ring
+    aaron:expenses:stuff                            $1.41
+    joint:liabilities:ccr
+
+2025/01/03 BILT | Rent
+    joint:expenses:rent                           $2,310.07
+    joint:liabilities:bilt
+
+2025/01/03 Synchrony | Filippo coaching
+    aaron:assets:bank:synchrony                     $50.00
+    joint:income:coaching
+
+2025/01/04 Custom Cash | McDonald's Foster City
+    joint:expenses:dining                           $5.46
+    joint:liabilities:customcash
+
+2025/01/04 SYW | Peak Design Gear
+    joint:expenses:misc                            $197.67
+    joint:liabilities:syw
+
+2025/01/05 SYW | Amazon Car Organizer
+    joint:expenses:stuff                           $23.94
+    joint:liabilities:syw
+
+2025/01/06 Ally | Custom Cash Payment
+    joint:assets:bank:ally                          -$307.21
+    joint:liabilities:customcash
+
+2025/01/06 Venture X | Beijing Forbi
+    joint:expenses:travel:dining                    $24.63
+    joint:liabilities:venturex
+
+2025/01/06 Venture X | XASLTQXXCYWHSJB
+    joint:expenses:travel:dining                    $13.41
+    joint:liabilities:venturex
+
+2025/01/06 SYW | Chevron
+    joint:expenses:gas                              $42.83
+    joint:liabilities:syw
+
+2025/01/06 Ally | Synchrony Bank P2P
+    joint:assets:bank:ally                            $2,000.00
+    aaron:assets:bank:synchrony
+
+2025/01/10 Synchrony | BILT payment
+    aaron:assets:bank:synchrony                     -$2,691.98
+    joint:liabilities:bilt
+
+2025/01/07 Venture X | Ctrip
+    joint:expenses:travel:transportation            $13.14
+    joint:liabilities:venturex
+
+2025/01/07 Venture X | Uniqlo
+    joint:expenses:clothing                         $54.70
+    joint:liabilities:venturex
+
+2025/01/08 Venture X | QR Code Payment
+    joint:expenses:travel:dining                    $1.37
+    joint:liabilities:venturex
+
+2025/01/09 Venture X | Ctrip
+    joint:expenses:travel:transportation            $11.07
+    joint:liabilities:venturex
+
+2025/01/09 Venture X | Yuyuan Old Street
+    joint:expenses:travel:dining                    $13.25
+    joint:liabilities:venturex
+
+2025/01/10 Venture X | Didi Chuxing
+    joint:expenses:travel:transportation            $3.96
+    joint:liabilities:venturex
+
+2025/01/11 BILT | City of Burlingame Parking
+    joint:expenses:car:parking                      $1.50
+    joint:liabilities:bilt
+
+2025/01/11 Custom Cash | Points Redemption
+    joint:liabilities:customcash                    $15.77
+    joint:income:rewards
+
+2025/01/11 Custom Cash | TPumps
+    joint:expenses:dining                           $11.50
+    joint:liabilities:customcash
+
+2025/01/11 Bonvoy | Crepevine
+    joint:expenses:dining                           $45.99
+    joint:liabilities:bonvoy
+
+2025/01/13 BILT | Youtube Premium
+    aaron:expenses:subscriptions                    $13.99
+    joint:liabilities:bilt
+
+2025/01/13 CCR | Amtrak
+    joint:expenses:travel:train                     $94.00
+    joint:liabilities:ccr
+
+2025/01/13 Synchrony | Coaching
+    aaron:assets:bank:synchrony                     $50.00
+    joint:income:coaching
+
+2025/01/14 Synchrony | Counsel AI Reimbursement
+    aaron:assets:bank:synchrony                     $114.36
+    joint:expenses:travel
+
+2025/01/14 Venture X | Brothers Cafe Mill
+    joint:expenses:dining                           $20.39
+    joint:liabilities:venturex
+
+2025/01/14 Venture X | Didi Chuxing
+    joint:expenses:travel:transportation            $10.16
+    joint:liabilities:venturex
+
+2025/01/14 Progressive | Insurance
+    joint:expenses:insurance:car                    $801.88
+    joint:liabilities:venturex
+
+2025/01/14 ASI Select | Insurance
+    joint:expenses:insurance:rental                 $126.04
+    joint:liabilities:venturex
+
+2025/01/15 BILT | Apple Care+
+    joint:expenses:insurance:applecare              $14.29
+    joint:liabilities:bilt
+
+2025/01/15 Progressive | Insurance Refund
+    joint:liabilities:venturex                    $304.70
+    joint:expenses:insurance:car
+
+2025/01/15 Custom Cash | In N Out
+    joint:expenses:dining                           $40.63
+    joint:liabilities:customcash
+
+2025/01/15 Synchrony | Counsel AI Payroll
+    aaron:assets:bank:synchrony                     $5,712.52
+    joint:income:counsel
+
+2025/01/15 Synchrony | Interest Payment
+    aaron:assets:bank:synchrony                     $47.00
+    joint:income:interest
+
+2025/01/15 Synchrony | Roth IRA investment 2025
+    joint:assets:investments:rothira                 $7,000.00
+    aaron:assets:bank:synchrony
+
+2025/01/16 Synchrony | Mikayla's gifts for dining
+    aaron:assets:bank:synchrony                     $62.39
+    joint:expenses:dining
+
+2025/01/16 Synchrony | Coaching Nicole
+    aaron:assets:bank:synchrony                     $150.00
+    joint:income:coaching
+
+2025/01/16 Ally | Raisin US Transfer for funding IRAs
+    joint:assets:bank:ally                         $11,266.73
+    joint:assets:bank:raisin
+
+2025/01/16 Venture X | Presidio Trust Parking
+    joint:expenses:car:parking                      $6.00
+    joint:liabilities:venturex
+
+2025/01/16 Venture X | Presidio Trust Parking
+    joint:expenses:car:parking                      $1.50
+    joint:liabilities:venturex
+
+2025/01/16 Venture X | Progressive Insurance Refund
+    joint:liabilities:venturex                      $43.00
+    joint:expenses:insurance:car
+
+2025/01/16 Bonvoy | Dining Credit
+    joint:liabilities:bonvoy                        $16.49
+    joint:income:rewards
+
+2025/01/17 Venture X | MTA Meter
+    joint:expenses:car:parking                      $1.00
+    joint:liabilities:venturex
+
+2025/01/17 Venture X | MTA Meter
+    joint:expenses:car:parking                      $1.00
+    joint:liabilities:venturex
+
+2025/01/17 SYW | Chevron
+    joint:expenses:gas                              $40.04
+    joint:liabilities:syw
+
+2025/01/17 SYW | Trader Joe's
+    joint:expenses:groceries                        $114.04
+    joint:liabilities:syw
+
+2025/01/20 SYW | Online spending
+    joint:expenses:misc                             $195.00
+    joint:liabilities:syw
+
+2025/01/20 Custom Cash | Bun Mee
+    joint:expenses:travel:dining                     $25.35
+    joint:liabilities:customcash
+
+2025/01/21 Synchrony | Bank of America Payment
+    aaron:assets:bank:synchrony                     -$44.51
+    joint:liabilities:ccr
+
+2025/01/21 Synchrony | Capital One Payment
+    aaron:assets:bank:synchrony                     -$1,560.31
+    joint:liabilities:venturex
+
+2025/01/21 Ally | Loan mikayla for tuition
+    joint:assets:bank:ally                          -$4,000.00
+    aaron:assets:receivable:mikayla
+
+2025/01/21 Ally | Mikayla Roth IRA 2024
+    joint:assets:bank:ally                          -$7,000.00
+    joint:assets:investments:rothira
+
+2025/01/21 Venture X | MTA Transit
+    joint:expenses:commute                          $2.90
+    joint:liabilities:venturex
+
+2025/01/21 Venture X | MTA Transit
+    joint:expenses:commute                           $8.50
+    joint:liabilities:venturex
+
+2025/01/22 BILT | MTA Transit
+    joint:expenses:commute                          $2.90
+    joint:liabilities:bilt
+
+2025/01/23 Ally | Interest
+    joint:assets:bank:ally                          $15.59
+    joint:income:interest
+
+2025/01/23 Bank of America | Amtrak Refund
+    joint:liabilities:ccr                           $6.00
+    joint:expenses:travel:train
+
+2025/01/24 Ally | Bonvoy Payment
+    joint:assets:bank:ally                          -$40.83
+    joint:liabilities:bonvoy
+
+2025/01/24 Venture X | Publique Espresso Bar
+    joint:expenses:dining                           $10.86
+    joint:liabilities:venturex
+
+2025/01/24 Synchrony | Interest Payment
+    aaron:assets:bank:synchrony                     $16.24
+    joint:income:interest
+
+2025/01/25 Venture X | Pho Amsterdam
+    joint:expenses:dining                           $13.89
+    joint:liabilities:venturex
+
+2025/01/25 Misc | Groceries
+    joint:expenses:groceries                        $60.00
+    joint:expenses:misc
+
+2025/01/25 Misc | La Pecora Bianca
+    joint:expenses:dining                           $80.00
+    joint:expenses:misc
+
+2025/01/25 SYW | Met Museum
+    joint:expenses:entertainment                    $1.00
+    joint:liabilities:syw
+
+2025/01/25 SYW | Shop Your Way online shopping GC
+    joint:expenses:misc                              $195.00
+    joint:liabilities:syw
+
+2025/01/26 BILT | HEY TEA
+    joint:expenses:dining                           $9.38
+    joint:liabilities:bilt
+
+2025/01/27 Misc | Laundry
+    joint:expenses:groceries                        $25
+    joint:expenses:misc
+
+2025/01/27 Ally | Shop Your Way Payment
+    joint:assets:bank:ally                          -$321.40
+    joint:liabilities:syw
+
+2025/01/27 Venture X | MTA
+    joint:expenses:commute                          $5.80
+    joint:liabilities:venturex
+
+2025/01/27 Venture X | Google Refund
+    joint:liabilities:venturex                      $14.63
+    joint:expenses:subscriptions
+
+2025/01/30 SYW | Statement Credit
+    joint:liabilities:syw                          $100.00
+    joint:income:rewards
+
+2025/01/31 Bank of America | Cash withdrawal for wok wok 
+    joint:expenses:gifts                            $100.00
+    joint:assets:bank:bofa
+
+2025/01/31 CCR | Delta Airlines to UT
+    joint:expenses:travel:flights                    $233.48
+    joint:liabilities:ccr
+
+2025/01/31 CCR | Amtrak to Albany
+    joint:expenses:travel:train                     $6.00
+    joint:liabilities:ccr
+
+2025/02/01 SYW | Shop Your Way online shopping GC
+    joint:expenses:misc                              $195.00
+    joint:liabilities:syw
+
+2025/02/02 Keeps | Monthly subscription
+    aaron:expenses:healthcare                       $61.00
+    joint:liabilities:bilt
+
+2025/02/02 Bonvoy | Shake Shack
+    joint:expenses:dining                           $34.25
+    joint:liabilities:bonvoy
+
+2025/02/03 Synchrony | Harvey Travel Reimbursement
+    aaron:assets:bank:synchrony                     $131.95
+    joint:income:counsel
+
+2025/02/03 Synchrony | Coaching
+    aaron:assets:bank:synchrony                     $100.00
+    joint:income:coaching
+
+2025/02/04 BILT | Rent
+    joint:expenses:rent                           $2,310.07
+    joint:liabilities:bilt
+
+2025/02/04 Venture X | MTA Transit
+    joint:expenses:commute                          $29.00
+    joint:liabilities:venturex
+
+2025/02/04 Venture X | HKU Application
+    joint:expenses:school                           $38.51
+    joint:liabilities:venturex
+
+2025/02/04 SYW | Shop Your Way online shopping GC
+    joint:expenses:misc                              $195.00
+    joint:liabilities:syw
+
+2025/02/05 Bonvoy | Brilliant Dining Credit
+    joint:liabilities:bonvoy                       $25.00
+    joint:income:rewards
+
+2025/02/06 SYW | Shop Your Way online shopping GC
+    joint:expenses:misc                              $195.00
+    joint:liabilities:syw
+
+2025/02/06 Ally | Harvey paycheck
+    joint:assets:bank:ally                          $5,712.54
+    joint:income:counsel
+
+2025/02/06 Ally | Transfer to Aaron Synchrony
+    joint:assets:bank:ally                          -$5,000.00
+    aaron:assets:bank:synchrony
+
+2025/02/06 Ally | Custom Cash Citi Payment
+    joint:assets:bank:ally                          -$320.31
+    joint:liabilities:customcash
+
+2025/02/07 BILT | MTA Transit
+    joint:expenses:commute                          $2.90
+    joint:liabilities:bilt
+
+2025/02/08 BILT | MTA Transit
+    joint:expenses:commute                          $2.90
+    joint:liabilities:bilt
+
+2025/02/08 Misc | Yifang Flushing
+    joint:expenses:dining                              $20.00
+    joint:expenses:misc
+
+2025/02/09 Misc | Groceries
+    joint:expenses:groceries                        $60.00
+    joint:expenses:misc
+
+2025/02/09 Misc | Amazon Toothpaste and Compound W
+    joint:expenses:groceries                        $35.00
+    joint:expenses:misc
+
+2025/02/09 Misc | New MBP
+    aaron:expenses:laptop                             $600.00
+    joint:expenses:misc
+
+2025/02/09 Delta Gold | New MBP
+    aaron:expenses:laptop                             $2,086.11
+    joint:liabilities:deltagold
+
+2025/02/11 Venture X | MTA
+    joint:expenses:commute                          $23.20
+    joint:liabilities:venturex
+
+2025/02/12 Misc | Ice cream cake and strawberries
+    joint:expenses:groceries                              $40
+    joint:expenses:misc
+
+2025/02/12 SYW | Online spending
+    joint:expenses:misc                             $35.00
+    joint:liabilities:syw
+
+2025/02/12 Custom Cash | Statement Credit
+    joint:liabilities:customcash                    $3.42
+    joint:income:rewards
+
+2025/02/12 Synchrony | BILT payment
+    aaron:assets:bank:synchrony                     -$2,405.76
+    joint:liabilities:bilt
+
+2025/02/13 Misc | Chick Fil A
+    joint:expenses:dining                              $24
+    joint:expenses:misc
+
+2025/02/13 BILT | Google Youtube Premium
+    joint:expenses:subscriptions                     $13.99
+    joint:liabilities:bilt
+
+2025/02/14 Misc | Flowers
+    aaron:expenses:gifts                              $32
+    joint:expenses:misc
+
+2025/02/14 Venture X | Playa Bowls Columbia
+    joint:expenses:dining                               $16.14
+    joint:liabilities:venturex
+
+2025/02/14 Synchrony | Venmo from Mikayla for Playa Bowls
+    aaron:assets:bank:synchrony                          $16.14
+    joint:expenses:dining
+
+2025/02/14 Synchrony | Interest Payment
+    aaron:assets:bank:synchrony                          $42.59
+    joint:income:interest
+
+2025/02/15 BILT | Apple.com
+    joint:expenses:insurance:applecare              $14.29
+    joint:liabilities:bilt
+
+2025/02/17 SYW | Online spending
+    joint:expenses:misc                             $195.00
+    joint:liabilities:syw
+
+2025/02/18 Venture X | MTA
+    joint:expenses:commute                          $2.90
+    joint:liabilities:venturex
+
+2025/02/18 SYW | Online spending
+    joint:expenses:misc                             $195.00
+    joint:liabilities:syw
+
+2025/02/18 Synchrony | Sell Macbook Air
+    aaron:assets:bank:synchrony                          $1,300.00
+    joint:income:selling
+
+2025/02/18 BILT | Alaska WiFi (Reimburseable)
+    joint:expenses:travel                           $8.00
+    joint:liabilities:bilt
+
+2025/02/19 BILT | Delta Fees for SLC
+    joint:expenses:travel                           $11.20
+    joint:liabilities:bilt
+
+2025/02/19 BILT | Lyft Ride
+    joint:expenses:travel                           $39.79
+    joint:liabilities:bilt
+
+2025/02/20 Synchrony | Bank of America Payment
+    aaron:assets:bank:synchrony                          -$90.56
+    joint:liabilities:ccr
+
+2025/02/21 Synchrony | Counsel AI Payroll
+    aaron:assets:bank:synchrony                          $5,712.52
+    joint:income:counsel
+
+2025/02/21 Synchrony | Capital One Payment
+    aaron:assets:bank:synchrony                          -$1,154.58
+    joint:liabilities:venturex
+
+2025/02/23 Misc | Gasoline
+    joint:expenses:gas                                   $47.00  
+    joint:expenses:misc
+
+2025/02/23 SYW | Online spending
+    joint:expenses:misc                             $195.00
+    joint:liabilities:syw
+
+2025/02/24 Ally | Interest
+    joint:assets:bank:ally                          $16.71
+    joint:income:interest
+
+2025/02/24 Venture X | AGUMBE INC.
+    joint:expenses:dining                           $18.53
+    joint:liabilities:venturex
+
+2025/02/24 Venture X | MOGE TEE
+    joint:expenses:dining                           $7.46
+    joint:liabilities:venturex
+
+2025/02/24 Venture X | Costco
+    joint:expenses:dining                            $3.83
+    joint:liabilities:venturex
+
+2025/02/24 Ally | Amex Payment
+    joint:assets:bank:ally                         -$29.50
+    joint:liabilities:bonvoy
+
+2025/02/24 CCR | Statement Credit
+    joint:liabilities:ccr                           $17.56
+    joint:income:rewards
+
+2025/02/25 Synchrony | Interest Payment
+    aaron:assets:bank:synchrony                     $11.37
+    aaron:income:interest
+
+2025/02/25 Misc | Happy Lemon with Mayank
+    joint:expenses:dining                              $10.00
+    joint:expenses:misc
+
+2025/02/25 Misc | Uber after Causewells with N/J
+    joint:expenses:travel:uber                         $22.00
+    joint:expenses:misc
+
+2025/02/26 Ally | Shop Your Way Payment  
+    joint:assets:bank:ally                         -$1,250.37
+    joint:liabilities:syw
+
+2025/02/27 Synchrony | Counsel Reimbursement
+    aaron:assets:bank:synchrony                     $109.93
+    joint:expenses:misc
+
+2025/02/27 SYW | Shop Your Way Rewards
+    joint:liabilities:syw                          $100
+    joint:income:rewards
+
+2025/02/27 Venture X | Croissant Consortium
+    joint:expenses:dining                           $5.67
+    joint:liabilities:venturex
+
+2025/03/01 Venture X | Publique Espresso Bar
+    joint:expenses:dining                           $19.94
+    joint:liabilities:venturex
+
+2025/03/03 Venture X | Trader Joe's
+    joint:expenses:groceries                        $47.00
+    joint:liabilities:venturex
+
+2025/03/03 Venture X | MTA Transit
+    joint:expenses:commute                          $8.70
+    joint:liabilities:venturex
+
+2025/03/03 Venture X | Moge Tee Amsterdam
+    joint:expenses:dining                           $7.79
+    joint:liabilities:venturex
+
+2025/03/03 Venture X | GT Uganda
+    joint:expenses:travel:visa                       $51.50
+    joint:liabilities:venturex
+
+2025/03/04 BILT | Lyft Rides
+    joint:expenses:travel:uber                       $124.98
+    joint:liabilities:bilt
+
+2025/03/04 BILT | Rent
+    joint:expenses:rent                             $2,310.07
+    joint:liabilities:bilt
+
+2025/03/04 SYW | Misc
+    joint:expenses:misc                             $195
+    joint:liabilities:syw
+
+2025/03/05 Ally | Counsel AI Payroll
+    joint:assets:bank:ally                         $5,712.53
+    joint:income:counsel
+
+2025/03/05 Ally | USBank Bonus from Mikayla
+    joint:assets:bank:ally                         $450
+    aaron:assets:receivable:mikayla
+
+2025/03/06 SYW | Misc
+    joint:expenses:misc                             $195
+    joint:liabilities:syw
+
+2025/03/06 Ally | Citi Payment
+    joint:assets:bank:ally                         -$74.06
+    joint:liabilities:customcash
+
+2025/03/06 Misc | Supplies for Uganda
+    joint:expenses:travel:supplies                  $76.00
+    joint:expenses:misc
+
+2025/03/09 SYW | Misc
+    joint:expenses:misc                             $30
+    joint:liabilities:syw
+
+2025/03/09 Bonvoy | Mogee Tee
+    joint:expenses:dining                           $9.51
+    joint:liabilities:bonvoy
+
+2025/03/10 Bonvoy | Shake Shack after run
+    joint:expenses:dining                           $30.87
+    joint:liabilities:bonvoy
+
+2025/03/10 Misc | Dining
+    joint:expenses:dining                           $40.00
+    joint:expenses:misc
+
+2025/03/10 Ally | Selling iPhone 13
+    joint:assets:bank:ally                         $141.00
+    joint:income:selling
+
+2025/03/10 Bank of America | Selling iPhone 13
+    joint:assets:bank:bofa                         $100.00
+    joint:income:selling
+
+2025/03/11 Synchrony | Transfer from Ally
+    aaron:assets:bank:synchrony                     $3,000.00
+    joint:assets:bank:ally
+
+2025/03/12 Synchrony | BILT Payment
+    aaron:assets:bank:synchrony                     -$2,403.14
+    joint:liabilities:bilt
+
+2025/03/12 Misc | Travel Medicine
+    joint:expenses:travel:medicine                  $8.00
+    joint:expenses:misc
+
+2025/03/14 Venture X | Uniqlo
+    joint:expenses:clothing                         $59.80
+    joint:liabilities:venturex
+
+2025/03/14 Synchrony | Counsel Reimbursement
+    aaron:assets:bank:synchrony                     $178.57
+    joint:expenses:travel:uber                      -$100
+    joint:expenses:travel:dining
+
+2025/03/14 Synchrony | Interest Payment
+    aaron:assets:bank:synchrony                     $54.67
+    joint:income:interest
+
+2025/03/15 Venture X | MTA
+    joint:expenses:commute                          $14.50
+    joint:liabilities:venturex
+
+2025/03/15 BILT | Apple.com
+    joint:expenses:insurance:applecare              $14.29
+    joint:liabilities:bilt
+
+2025/03/15 BILT | Teddimatts Laundry
+    joint:expenses:groceries                        $15.00
+    joint:liabilities:bilt
+
+2025/03/16 Misc | Dining Harvey Travel
+    joint:expenses:travel:dining                   $48.69
+    joint:expenses:misc
+
+2025/03/17 Venture X | Mikayla Uganda Uber to airport
+    joint:expenses:travel:uber                      $79.69
+    joint:liabilities:venturex
+
+2025/03/17 Venture X | Cafesserie
+    joint:expenses:travel:dining                    $10.11
+    joint:liabilities:venturex
+
+2025/03/18 Venture X | Uganda dining
+    joint:expenses:travel:dining                     $2.46
+    joint:liabilities:venturex
+
+2025/03/18 BILT | Towerfall Ascension
+    aaron:expenses:games                           $4.30
+    joint:liabilities:bilt
+
+2025/03/18 BILT | Lyft Rides
+    joint:expenses:travel:uber                     $124.90
+    joint:liabilities:bilt
+
+2025/03/18 SYW | Chevron Gas
+    joint:expenses:gas                             $45.86
+    joint:liabilities:syw
+
+2025/03/18 Misc | Haircut
+    aaron:expenses:haircut                         $57.00
+    joint:expenses:misc
+
+2025/03/20 Synchrony | Bank of America Payment
+    aaron:assets:bank:synchrony                     -$233.48
+    joint:liabilities:ccr
+
+2025/03/21 Synchrony | Capital One Payment  
+    aaron:assets:bank:synchrony                     -$100.92
+    joint:liabilities:venturex
+
+2025/03/21 Bonvoy | Dining credit
+    joint:liabilities:bonvoy                        $25
+    joint:income:rewards
+
+2025/03/22 Venture X | Uganda Dining
+    joint:expenses:travel:dining                      $4.78
+    joint:liabilities:venturex
+
+2025/03/22 Venture X | Uganda Safari
+    joint:expenses:travel:entertainment               $167.86
+    joint:liabilities:venturex
+
+2025/03/22 Misc | True Burger Dining
+    joint:expenses:travel:dining                      $19.90
+    joint:expenses:misc
+
+2025/03/22 Misc | Groceries
+    joint:expenses:groceries                        $23.24
+    joint:expenses:misc
+
+2025/03/22 BILT | Alaska Wifi
+    joint:expenses:travel:flights                  $8.00
+    joint:liabilities:bilt
+
+2025/03/23 BILT | Lyft Rides
+    joint:expenses:travel:uber                     $149.66
+    joint:liabilities:bilt
+
+2025/03/23 BILT | Keeps Finasteride
+    aaron:expenses:healthcare                        $85
+    joint:liabilities:bilt
+
+2025/03/23 Misc | Awful Hot Chocolate
+    joint:expenses:dining                           $5.99
+    joint:expenses:misc
+
+2025/03/23 Misc | Din Tai Fung Mikayla birthday
+    joint:expenses:gifts                           $130.17
+    joint:expenses:misc
+
+2025/03/23 Ally | Interest Payment
+    joint:assets:bank:ally                         $22.33
+    joint:income:interest
+
+2025/03/24 Misc | Levain with the Twins
+    joint:expenses:dining                           $17.33
+    joint:expenses:misc
+
+2025/03/24 Misc | Little Maven with the Twins
+    joint:expenses:dining                           $56.00
+    aaron:assets:bank:synchrony
+
+2025/03/24 Synchrony | Gift from parents
+    aaron:assets:bank:synchrony                     $100
+    joint:income:gifts
+
+2025/03/24 SYW | Westville Mikayla Birthday
+    joint:expenses:gifts                           $45.68
+    joint:liabilities:syw
+
+2025/03/25 Synchrony | Counsel Paycheck
+    aaron:assets:bank:synchrony                     $5,741.33
+    joint:income:counsel
+
+2025/03/25 Synchrony | Counsel Reimbursement
+    aaron:assets:bank:synchrony                     $173.59
+    joint:expenses:travel:uber                      -$124.90
+    joint:expenses:travel:dining
+
+2025/03/25 Synchrony | Interest Payment
+    aaron:assets:bank:synchrony                     $10.58
+    joint:income:interest
+
+2025/03/25 Venture X | MTA
+    joint:expenses:commute                          $23.00
+    joint:liabilities:venturex
+
+2025/03/26 Ally | Zelle repayment Mikayla Uber (Jose, Parki)
+    joint:assets:bank:ally                         $19.92
+    joint:assets:bank:ally                         $75.87
+    joint:assets:bank:ally                         $75.87
+    joint:expenses:travel:uber
+
+2025/03/26 Ally | SYW
+    joint:assets:bank:ally                         -$1105
+    joint:liabilities:syw
+
+2025/03/26 Ally | Bonvoy payment
+    joint:assets:bank:ally                         -$9.25
+    joint:liabilities:bonvoy
+
+2025/03/26 Ally | Amex gold payment
+    joint:assets:bank:ally                         -$2086.11
+    joint:liabilities:deltagold
+
+2025/03/27 BILT | DoorDash Bondisushi SF NY office dinner
+    joint:expenses:dining                          $54.95
+    joint:liabilities:bilt
+
+2025/03/28 Synchrony | Counsel Payment
+    aaron:assets:bank:synchrony                     $195.50
+    joint:expenses:travel:dining                    -$60
+    joint:expenses:travel:uber
+
+2025/03/29 Misc | Pizza
+    joint:expenses:dining                           $14.75
+    joint:expenses:misc
+
+2025/03/29 Misc | McDonalds
+    joint:expenses:dining                           $8.91
+    joint:expenses:misc
+
+2025/03/29 Misc | McDonalds
+    joint:expenses:dining                           $5.43
+    joint:expenses:misc
+
+2025/03/31 Misc | Trader Joe's
+    joint:expenses:groceries                        $40.00
+    joint:expenses:misc
+
+2025/03/31 Synchrony | Counsel Reimbursement for NYC dinner
+    aaron:assets:bank:synchrony                     $275.32
+    joint:expenses:dining
+
+2025/03/31 SYW | Thai Villa NYC ($5 was tip)
+    joint:expenses:dining                          $280.32
+    joint:liabilities:syw
+
+2025/03/31 Premium Rewards Elite | Annual Fee
+    joint:expenses:fees                             $550.00
+    joint:liabilities:pre
+
+2025/03/31 Synchrony | Counsel Reimbursement for NYC dinner
+    aaron:assets:bank:synchrony                     $54.95
+    joint:expenses:dining
+
+2025/04/01 Venture X | Commute
+    joint:expenses:commute                          $5.80
+    joint:liabilities:venturex
+
+2025/04/01 Premium Rewards Elite | BCD Tofu House
+    joint:expenses:dining                           $69.34
+    joint:liabilities:pre
+
+2025/04/01 Misc | Trader Joe's
+    joint:expenses:groceries                        $39.38
+    joint:expenses:misc
+
+2025/04/02 Misc | Grace Street
+    joint:expenses:dining                           $35.90
+    joint:expenses:misc
+
+2025/04/02 Synchrony | Excess HSA Withdrawal
+    aaron:assets:bank:synchrony                     $711.00
+    joint:income:counsel
+
+2025/04/02 BILT | Rent Payment
+    joint:expenses:rent                    $2,310.07
+    joint:liabilities:bilt
+
+2025/04/03 Ally | Counsel Paycheck retain $10 to USB
+    joint:assets:bank:ally                         $5,731.34
+    joint:income:counsel
+
+2025/04/03 CCR | Mikayla UT May 1 travel JetBlue
+    joint:expenses:travel:flights                     $271.60
+    joint:liabilities:ccr
+
+2025/04/04 Premium Rewards Elite | Pho Amsterdam
+    joint:expenses:dining                           $13.89
+    joint:liabilities:pre
+
+2025/04/06 Misc | Prova Pizzabar
+    joint:expenses:dining                           $17.78
+    joint:expenses:misc
+
+2025/04/06 Misc | Trader Joe's
+    joint:expenses:groceries                        $56.41
+    joint:expenses:misc
+
+2025/04/07 Premium Rewards Elite | MTA Transit
+    joint:expenses:commute                          $26.10
+    joint:liabilities:pre
+
+2025/04/07 Premium Rewards Elite | Oconomi Catering (Pizza I think)
+    joint:expenses:dining                           $15.24
+    joint:liabilities:pre
+
+2025/04/07 Ally | Transfer to Mikayla
+    mikayla:assets:investments:sep                 $1,970.00
+    joint:assets:bank:ally
+
+2025/04/08 Premium Rewards Elite | Max Soha
+    joint:expenses:dining                           $12.82
+    joint:liabilities:pre
+
+2025/04/09 Premium Rewards Elite | Laundry
+    joint:expenses:groceries                        $15.00
+    joint:liabilities:pre
+
+2025/04/10 Premium Rewards Elite | DoorDash Puravida (Reimburseable)
+    joint:expenses:receivable:dining                 $100.91
+    joint:liabilities:pre
+
+2025/04/10 Synchrony | sold PD Tech pouch
+    aaron:assets:bank:synchrony                     $40.00
+    joint:income:selling
+
+2025/04/13 Misc | Boba Guys Nolita
+    joint:expenses:dining                           $9.60
+    joint:expenses:misc
+
+2025/04/13 Misc | Jin Ramen Corp
+    joint:expenses:dining                           $53.96
+    joint:expenses:misc
+
+2025/04/13 Misc | McDonald's
+    joint:expenses:dining                           $3.26
+    joint:expenses:misc
+
+2025/04/15 Misc | Trader Joe's
+    joint:expenses:groceries                        $52.97
+    joint:expenses:misc
+
+2025/04/14 Synchrony | Wells Fargo Credit Card Payment
+    aaron:assets:bank:synchrony                     -$2,534.42
+    joint:liabilities:bilt
+
+2025/04/14 CCR | Breeze Airways Utah
+    joint:expenses:travel:flights                   $55.11
+    joint:liabilities:ccr
+
+2025/04/14 CCR | Amtrak Washington DC Refund
+    joint:expenses:travel:transportation            -$60.00
+    joint:liabilities:ccr
+
+2025/04/14 CCR | Amtrak Washington DC
+    joint:expenses:travel:transportation            $120.00
+    joint:liabilities:ccr
+
+2025/04/14 CCR | Amtrak Washington DC
+    joint:expenses:travel:train                     $102.00
+    joint:liabilities:ccr
+
+2025/04/14 Premium Rewards Elite | CourseHorse Class
+    joint:expenses:education                        $157.50
+    joint:liabilities:pre
+
+2025/04/15 Premium Rewards Elite | Reimbursement Credit
+    joint:liabilities:pre                           $100.91
+    joint:expenses:receivable:dining
+
+2025/04/16 Premium Rewards Elite | Taxes
+    joint:expenses:taxes:federal                    $3,768.00
+    joint:expenses:taxes:federal                       $94.20
+    joint:liabilities:pre
+
+2025/04/16 Premium Rewards Elite | NYS Tax Payment
+    joint:expenses:taxes:state                      $3,481.00
+    joint:expenses:taxes:state                       $76.58
+    joint:liabilities:pre
+
+2025/04/15 CCR | Albany Trip Easter Visit
+    joint:expenses:travel:train                     $340.00
+    joint:liabilities:ccr
+
+2025/04/15 Synchrony | Tax Refund
+    aaron:assets:bank:synchrony                     $1,777.02
+    joint:income:taxrefund
+
+2025/04/15 Synchrony | Interest Payment
+    aaron:assets:bank:synchrony                     $79.48
+    joint:income:interest
+
+2025/04/15 BILT | Apple.com
+    joint:expenses:insurance:applecare              $14.29
+    joint:liabilities:bilt
+
+2025/04/15 SYW | DoorDash Puravida
+    joint:expenses:dining                           $39.33
+    joint:liabilities:syw
+
+2025/04/15 SYW | DoorDash Sweetgreen
+    joint:expenses:dining                           $63.46
+    joint:liabilities:syw
+
+2025/04/16 SYW | Morrocan Oil
+    aaron:expenses:health                             $31.03
+    joint:liabilities:syw
+
+2025/04/16 SYW | Razor heads
+    aaron:expenses:health                             $38.10
+    joint:liabilities:syw
+
+2025/04/16 BILT | DoorDash Puravida San Francisco
+    joint:expenses:dining                           $17.89
+    joint:liabilities:bilt
+
+2025/04/17 Synchrony | Counsel Reimbursement
+    aaron:assets:bank:synchrony                     $100.91
+    joint:expenses:dining
+
+2025/04/18 Ally | Counsel Paycheck  
+    joint:assets:bank:ally                         $5,741.33
+    joint:income:counsel
+
+2025/04/19 Premium Rewards Elite | Qahwah House Broadway
+    joint:expenses:dining                           $15.58
+    joint:liabilities:pre
+
+2025/04/19 SYW | Shop Your Way Visa
+    joint:expenses:misc                             $195.00
+    joint:liabilities:syw
+
+2025/04/20 BILT | Alaska Miles Purchase
+    joint:expenses:travel:flights                  $5.60
+    joint:liabilities:bilt
+
+2025/04/21 Premium Rewards Elite | MTA Transit
+    joint:expenses:commute                          $5.80
+    joint:liabilities:pre
+
+2025/04/21 Premium Rewards Elite | Hooked Market & Kitchen Latham
+    joint:expenses:gifts                           $176.19
+    joint:liabilities:pre
+
+2025/04/21 Misc | Amtrak Food
+    joint:expenses:dining                           $21.51
+    joint:expenses:misc
+
+2025/04/21 Synchrony | Counsel Reimbursement for SG and Puravida
+    aaron:assets:bank:synchrony                     $102.79
+    joint:expenses:dining
+
+2025/04/21 Misc | Trader Joe's
+    joint:expenses:groceries                        $56.00
+    joint:expenses:misc
+
+2025/04/21 SYW | Amazon Purchase
+    joint:expenses:stuff                            $10.88
+    joint:liabilities:syw
+
+2025/04/22 Synchrony | Capital One Payment
+    aaron:assets:bank:synchrony                     -$532.62
+    joint:liabilities:venturex
+
+2025/04/23 SYW | Amazon Purchase
+    joint:expenses:stuff                            $6.20
+    joint:liabilities:syw
+
+2025/04/23 Ally | Interest Paid
+    joint:assets:bank:ally                         $25.25
+    joint:income:interest
+
+2025/04/23 Ally | AMEX Epayment ACH Payment
+    joint:assets:bank:ally                          -$15.38
+    joint:liabilities:bonvoy
+
+2025/04/24 Synchrony | Counsel Reimbursement
+    aaron:assets:bank:synchrony                     $17.89
+    joint:expenses:dining
+
+2025/04/25 Synchrony | Interest Payment
+    aaron:assets:bank:synchrony                     $12.51
+    joint:income:interest
+
+2025/04/25 BILT | Delta Award Flight Santiago
+    joint:expenses:travel:flights                   $48.51
+    joint:liabilities:bilt
+
+2025/04/26 Misc | Trader Joe's
+    joint:expenses:groceries                        $44.51
+    joint:expenses:misc
+
+2025/04/27 Misc | Harvey Travel Food
+    joint:expenses:dining                           $51.65
+    joint:expenses:misc
+
+2025/04/27 SYW | Shop Your Way Visa
+    joint:expenses:misc                             $195.00
+    joint:liabilities:syw
+
+2025/04/27 BILT | WiFi Onboard Alaska Airlines
+    joint:expenses:travel:internet                  $8.00
+    joint:liabilities:bilt
+
+2025/04/28 BILT | Lyft 2 Rides San Francisco
+    joint:expenses:travel:uber                     $150.45
+    joint:liabilities:bilt
+
+2025/04/28 Ally | SHOP YOUR WAY MC AUTO PYMT
+    joint:assets:bank:ally                          -$691.86
+    joint:liabilities:syw
+
+2025/04/28 Premium Rewards Elite | Graduation Gown
+    joint:expenses:clothing                            $71.98
+    joint:liabilities:pre
+
+2025/04/29 Premium Rewards Elite | MTA
+    joint:expenses:commute                          $8.70
+    joint:liabilities:pre
+
+2025/04/29 Premium Rewards Elite | Hades Game
+    aaron:expenses:games                            $27.21
+    joint:liabilities:pre
+
+2025/04/29 Premium Rewards Elite | H MART NEW YORK NY
+    joint:expenses:groceries                        $30.77
+    joint:liabilities:pre
+
+2025/04/30 Misc | PABU Izakaya with Roshan/Aman/Mayank
+    joint:expenses:dining                           $171.06
+    joint:expenses:misc
+
+2025/04/30 SYW | Shop Your Way online shopping
+    joint:expenses:misc                             $195.00
+    joint:liabilities:syw
+
+2025/05/01 Synchrony | CA Tax refund
+    aaron:assets:bank:synchrony                     $1,037.00
+    joint:expenses:taxes
+
+2025/05/01 Misc | Cafe Rio
+    joint:expenses:dining                           $12.57
+    joint:expenses:misc
+
+2025/05/01 SYW | Chevron San Mateo CA
+    joint:expenses:gas                              $38.84
+    joint:liabilities:syw
+
+2025/05/01 Premium Rewards Elite | Pho with Varun
+    joint:expenses:dining                           $43.10
+    joint:liabilities:pre
+
+2025/05/02 BILT | Wifi on Breeze
+    joint:expenses:travel:flights                     $4.92
+    joint:liabilities:bilt
+
+2025/05/03 SYW | Maverik Vineyard UT
+    joint:expenses:gas                              $22.09
+    joint:liabilities:syw
+
+2025/05/03 Premium Rewards Elite | Reimburseable Harvey Dining
+    joint:expenses:dining                    $11.53
+    joint:liabilities:pre
+
+2025/05/03 Premium Rewards Elite | Commute
+    joint:expenses:commute                          $18.40
+    joint:liabilities:pre
+
+2025/05/03 Bonvoy | DING TEA SUGASALT LAKE CTY UT with Jaden
+    joint:expenses:gifts                           $1.32
+    joint:liabilities:bonvoy
+
+2025/05/04 SYW | Maverik Vineyard UT
+    joint:expenses:gas                              $3.66
+    joint:liabilities:syw
+
+2025/05/05 Synchrony | Varun dinner repayment
+    aaron:assets:bank:synchrony                     $21.00
+    joint:expenses:dining
+
+2025/05/05 Synchrony | Aman/Mayank/Roshan dinner repayment
+    aaron:assets:bank:synchrony                     $128.50
+    joint:expenses:dining
+
+2025/05/05 Misc | Paneras
+    joint:expenses:dining                           $7.42
+    joint:expenses:misc
+
+2025/05/05 Premium Rewards Elite | Circus Academy Mikayla
+    aaron:expenses:gifts                            $100.00
+    joint:liabilities:pre
+
+2025/05/05 Premium Rewards Elite | Glucose Tablets for Dad
+    joint:expenses:gifts                             $2.05
+    joint:liabilities:pre
+
+2025/05/05 Premium Rewards Elite | FEAST BUFFET OREM UT
+    joint:expenses:gifts                           $103.83
+    joint:liabilities:pre
+
+2025/05/05 Premium Rewards Elite | UBER *TRIP HELP.UBER.COM CA
+    joint:expenses:travel:transportation            $63.95
+    joint:liabilities:pre
+
+2025/05/06 Synchrony | Transfer to Ally Bank for option exercise
+    aaron:assets:bank:synchrony                     -$18,000.00
+    joint:assets:bank:ally
+
+2025/05/06 Ally | Counsel paycheck
+    joint:assets:bank:ally                          $5,741.33
+    joint:income:counsel
+
+2025/05/06 SYW | SHOPYOURWAY.COM HOFFMAN ESTATIL
+    joint:expenses:misc                             $195.00
+    joint:liabilities:syw
+
+2025/05/06 Premium Rewards Elite | Enterprise Car Rental
+    joint:expenses:travel:car                       $133.84
+    joint:liabilities:pre
+
+2025/05/07 Misc | PHO AMSTERDAM
+    joint:expenses:dining                            $73.15
+    joint:expenses:misc
+
+2025/05/08 Premium Rewards Elite | Vending
+    joint:expenses:dining                           $2.25
+    joint:liabilities:pre
+
+2025/05/08 Synchrony | Counsel paycheck
+    aaron:assets:bank:synchrony                     $237.32
+    joint:income:counsel
+
+2025/05/09 Premium Rewards Elite | Lifestyle Credit
+    joint:liabilities:pre                           $49.09
+    joint:income:rewards
+
+2025/05/10 Premium Rewards Elite | Teddimatts Laundry
+    joint:expenses:groceries                           $15.00
+    joint:liabilities:pre
+
+2025/05/11 Misc | TEA STORE-BARUCH COLLEGE
+    joint:expenses:dining                           $10.70
+    joint:expenses:misc
+
+2025/05/11 Misc | FREEHOLD IN THE PARK
+    joint:expenses:dining                           $13.79
+    joint:expenses:misc
+
+2025/05/12 Synchrony | BILT payment
+    aaron:assets:bank:synchrony                     -$2,769.06
+    joint:liabilities:bilt
+
+2025/05/12 Premium Rewards Elite | Ah Sam Flowers Mothers Day
+    joint:expenses:gifts                            $147.99
+    joint:liabilities:pre
+
+2025/05/13 Premium Rewards Elite | MTA
+    joint:expenses:commute                          $31.70
+    joint:liabilities:pre
+
+2025/05/13 Synchrony | P2P Transfer to Aaron Chan
+    aaron:assets:bank:synchrony                    $2,000.00
+    joint:assets:bank:ally
+
+2025/05/14 Misc | Grace Street Cafe
+    joint:expenses:dining                           $17.41
+    joint:expenses:misc
+
+2025/05/14 Misc | Rachel Owala Bottle and Amazon Wedding Gifts
+    joint:expenses:gifts                           $143.53
+    joint:expenses:misc
+
+2025/05/14 Bilt | DELTA flight SF -> NY Sept 1 (points)
+    joint:expenses:travel:flights                   $5.60
+    joint:liabilities:bilt
+
+2025/05/14 Premium Rewards Elite | Moge Tee
+    joint:expenses:dining                           $9.13
+    joint:liabilities:pre
+
+2025/05/15 Premium Rewards Elite | Dominos
+    joint:expenses:dining                           $16.74
+    joint:liabilities:pre
+
+2025/05/15 Synchrony | Interest Payment
+    aaron:assets:bank:synchrony                     $70.14
+    joint:income:interest
+
+2025/05/16 Misc | Miller's Twist Philadelphia
+    joint:expenses:travel:dining                    $5.00
+    joint:expenses:misc
+
+2025/05/16 Misc | American Revolution Museum
+    joint:expenses:travel:entertainment             $44.00
+    joint:expenses:misc
+
+2025/05/16 Misc | Sonnys Cheesesteaks Philadelphia
+    joint:expenses:travel:dining                    $24.82
+    joint:expenses:misc
+
+2025/05/16 Ally | Counsel payment
+    joint:assets:bank:ally                         $6,398.17
+    joint:income:counsel
+
+2025/05/17 Misc | Chick Fila
+    joint:expenses:travel:dining                    $31.25
+    joint:expenses:misc
+
+2025/05/17 Misc | Sunscreen
+    joint:expenses:groceries                        $10.00
+    joint:expenses:misc
+
+2025/05/17 Bonvoy | Arbitrary Dining catch up records
+    joint:expenses:dining                           $23.22
+    joint:liabilities:bonvoy
+
+
+

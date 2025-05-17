@@ -2,41 +2,53 @@ import React from 'react';
 import * as Select from '@radix-ui/react-select';
 import { CheckIcon, ChevronDownIcon } from '@radix-ui/react-icons';
 
-export function SelectMenu({
-  value,
-  onValueChange,
-  options = [],
-  placeholder = "Select an option"
-}) {
-  return (
-    <Select.Root value={value} onValueChange={onValueChange}>
-      <Select.Trigger className="select-trigger">
-        <Select.Value placeholder={placeholder} />
-        <Select.Icon className="select-icon">
-          <ChevronDownIcon />
-        </Select.Icon>
-      </Select.Trigger>
+export interface SelectOption {
+    value: string;
+    label: string;
+}
 
-      <Select.Portal>
-        <Select.Content className="select-content" position="popper" sideOffset={5}>
-          <Select.Viewport className="select-viewport">
-            {options.map((option) => (
-              <Select.Item
-                key={option.value}
-                value={option.value}
-                className="select-item"
-              >
-                <Select.ItemText>{option.label}</Select.ItemText>
-                <Select.ItemIndicator className="select-item-indicator">
-                  <CheckIcon />
-                </Select.ItemIndicator>
-              </Select.Item>
-            ))}
-          </Select.Viewport>
-        </Select.Content>
-      </Select.Portal>
-    </Select.Root>
-  );
+interface SelectMenuProps {
+    value: string;
+    onValueChange: (value: string) => void;
+    options: SelectOption[];
+    placeholder?: string;
+}
+
+export const SelectMenu: React.FC<SelectMenuProps> = ({
+    value,
+    onValueChange,
+    options = [],
+    placeholder = "Select an option"
+}) => {
+    return (
+        <Select.Root value={value} onValueChange={onValueChange}>
+            <Select.Trigger className="select-trigger">
+                <Select.Value placeholder={placeholder} />
+                <Select.Icon className="select-icon">
+                    <ChevronDownIcon />
+                </Select.Icon>
+            </Select.Trigger>
+
+            <Select.Portal>
+                <Select.Content className="select-content" position="popper" sideOffset={5}>
+                    <Select.Viewport className="select-viewport">
+                        {options.map((option) => (
+                            <Select.Item
+                                key={option.value}
+                                value={option.value}
+                                className="select-item"
+                            >
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                                <Select.ItemIndicator className="select-item-indicator">
+                                    <CheckIcon />
+                                </Select.ItemIndicator>
+                            </Select.Item>
+                        ))}
+                    </Select.Viewport>
+                </Select.Content>
+            </Select.Portal>
+        </Select.Root>
+    );
 }
 
 export const selectStyles = `

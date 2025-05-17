@@ -4,7 +4,7 @@ import { avatarStyles } from './Avatar';
 import { toastStyles } from './Toast';
 import { selectStyles } from './Select';
 
-export const componentStyles = `
+export const componentStyles: string = `
   ${dropdownStyles}
   ${dialogStyles}
   ${avatarStyles}

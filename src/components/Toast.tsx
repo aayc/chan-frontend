@@ -1,14 +1,22 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import * as Toast from '@radix-ui/react-toast';
 import { Cross1Icon } from '@radix-ui/react-icons';
 
-export function ToastNotification({
+interface ToastNotificationProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    title: string;
+    description: string;
+    action?: ReactNode;
+}
+
+export const ToastNotification: React.FC<ToastNotificationProps> = ({
     open,
     onOpenChange,
     title,
     description,
     action
-}) {
+}) => {
     return (
         <Toast.Provider>
             <Toast.Root

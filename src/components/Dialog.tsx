@@ -1,51 +1,60 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Cross2Icon } from '@radix-ui/react-icons';
 
-export function Modal({
-  trigger,
-  title,
-  description,
-  children,
-  primaryAction,
-  secondaryAction
-}) {
-  return (
-    <Dialog.Root>
-      <Dialog.Trigger asChild>
-        {trigger}
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="dialog-overlay" />
-        <Dialog.Content className="dialog-content">
-          <Dialog.Title className="dialog-title">{title}</Dialog.Title>
-          {description && (
-            <Dialog.Description className="dialog-description">
-              {description}
-            </Dialog.Description>
-          )}
-          {children}
-          <div className="dialog-buttons">
-            {primaryAction && (
-              <Dialog.Close asChild>
-                {primaryAction}
-              </Dialog.Close>
-            )}
-            {secondaryAction && (
-              <Dialog.Close asChild>
-                {secondaryAction}
-              </Dialog.Close>
-            )}
-          </div>
-          <Dialog.Close asChild>
-            <button className="icon-button" aria-label="Close">
-              <Cross2Icon />
-            </button>
-          </Dialog.Close>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
-  );
+interface ModalProps {
+    trigger: ReactNode;
+    title: string;
+    description?: string;
+    children?: ReactNode;
+    primaryAction?: ReactNode;
+    secondaryAction?: ReactNode;
+}
+
+export const Modal: React.FC<ModalProps> = ({
+    trigger,
+    title,
+    description,
+    children,
+    primaryAction,
+    secondaryAction
+}) => {
+    return (
+        <Dialog.Root>
+            <Dialog.Trigger asChild>
+                {trigger}
+            </Dialog.Trigger>
+            <Dialog.Portal>
+                <Dialog.Overlay className="dialog-overlay" />
+                <Dialog.Content className="dialog-content">
+                    <Dialog.Title className="dialog-title">{title}</Dialog.Title>
+                    {description && (
+                        <Dialog.Description className="dialog-description">
+                            {description}
+                        </Dialog.Description>
+                    )}
+                    {children}
+                    <div className="dialog-buttons">
+                        {primaryAction && (
+                            <Dialog.Close asChild>
+                                {primaryAction}
+                            </Dialog.Close>
+                        )}
+                        {secondaryAction && (
+                            <Dialog.Close asChild>
+                                {secondaryAction}
+                            </Dialog.Close>
+                        )}
+                    </div>
+                    <Dialog.Close asChild>
+                        <button className="icon-button" aria-label="Close">
+                            <Cross2Icon />
+                        </button>
+                    </Dialog.Close>
+                </Dialog.Content>
+            </Dialog.Portal>
+        </Dialog.Root>
+    );
 }
 
 export const dialogStyles = `

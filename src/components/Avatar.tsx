@@ -1,12 +1,19 @@
 import React from 'react';
 import * as Avatar from '@radix-ui/react-avatar';
 
-export function UserAvatar({
+interface UserAvatarProps {
+    src: string;
+    alt: string;
+    fallback: string;
+    size?: number;
+}
+
+export const UserAvatar: React.FC<UserAvatarProps> = ({
     src,
     alt,
     fallback,
     size = 45
-}) {
+}) => {
     return (
         <Avatar.Root className="avatar-root" style={{ width: size, height: size }}>
             <Avatar.Image

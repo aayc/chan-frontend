@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate } from 'react-router';
 
-export default function Login() {
+const Login: React.FC = () => {
     const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0();
     const navigate = useNavigate();
 
@@ -103,4 +103,6 @@ export default function Login() {
       `}</style>
         </div>
     );
-} 
+}
+
+export default Login; 

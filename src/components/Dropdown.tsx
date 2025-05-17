@@ -2,32 +2,44 @@ import React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ChevronRightIcon, CheckIcon } from '@radix-ui/react-icons';
 
-export function Dropdown({ items = [] }) {
-  return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        <button className="dropdown-trigger">
-          Options
-          <ChevronRightIcon className="dropdown-icon" />
-        </button>
-      </DropdownMenu.Trigger>
+export interface DropdownItem {
+    label?: string;
+    icon?: boolean;
+    separator?: boolean;
+    action?: () => void; // Optional action for the item
+}
 
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content className="dropdown-content" sideOffset={5}>
-          {items.map((item, index) => (
-            item.separator ? (
-              <DropdownMenu.Separator key={index} className="dropdown-separator" />
-            ) : (
-              <DropdownMenu.Item key={index} className="dropdown-item">
-                {item.label}
-                {item.icon && <ChevronRightIcon className="dropdown-item-icon" />}
-              </DropdownMenu.Item>
-            )
-          ))}
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
-  );
+interface DropdownProps {
+    items: DropdownItem[];
+    triggerLabel?: string;
+}
+
+export const Dropdown: React.FC<DropdownProps> = ({ items = [], triggerLabel = 'Options' }) => {
+    return (
+        <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+                <button className="dropdown-trigger">
+                    {triggerLabel}
+                    <ChevronRightIcon className="dropdown-icon" />
+                </button>
+            </DropdownMenu.Trigger>
+
+            <DropdownMenu.Portal>
+                <DropdownMenu.Content className="dropdown-content" sideOffset={5}>
+                    {items.map((item, index) => (
+                        item.separator ? (
+                            <DropdownMenu.Separator key={index} className="dropdown-separator" />
+                        ) : (
+                            <DropdownMenu.Item key={index} className="dropdown-item" onSelect={item.action}>
+                                {item.label}
+                                {item.icon && <ChevronRightIcon className="dropdown-item-icon" />}
+                            </DropdownMenu.Item>
+                        )
+                    ))}
+                </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+        </DropdownMenu.Root>
+    );
 }
 
 export const dropdownStyles = `
