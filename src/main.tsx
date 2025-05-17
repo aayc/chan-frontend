@@ -11,7 +11,7 @@ import Expenses from './components/ledger/Expenses';
 import Login from './routes/Login';
 
 import './index.css';
-import { componentStyles } from './components/generic/styles';
+import { componentStyles } from './components/shared/styles';
 
 const AUTH0_DOMAIN = import.meta.env.VITE_AUTH0_DOMAIN;
 const AUTH0_CLIENT_ID = import.meta.env.VITE_AUTH0_CLIENT_ID;
