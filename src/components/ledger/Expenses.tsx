@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { LedgerRepository } from '../lib/ledger/repository';
-import { LocalFileStorageService } from '../lib/ledger/storage';
-import { Budget, BudgetPeriod } from '../lib/ledger/types';
+import { LedgerRepository } from '../../lib/ledger/repository';
+import { LocalFileStorageService } from '../../lib/ledger/storage';
+import { Budget, BudgetPeriod } from '../../lib/ledger/types';
 
 interface ExpenseGroup {
     name: string;

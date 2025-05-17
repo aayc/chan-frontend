@@ -7,11 +7,11 @@ import Root from './routes/Root';
 import ErrorPage from './routes/ErrorPage';
 import Home from './routes/Home';
 import Ledger from './routes/Ledger';
-import Expenses from './routes/Expenses';
+import Expenses from './components/ledger/Expenses';
 import Login from './routes/Login';
 
 import './index.css';
-import { componentStyles } from './components/styles';
+import { componentStyles } from './components/generic/styles';
 
 const AUTH0_DOMAIN = import.meta.env.VITE_AUTH0_DOMAIN;
 const AUTH0_CLIENT_ID = import.meta.env.VITE_AUTH0_CLIENT_ID;

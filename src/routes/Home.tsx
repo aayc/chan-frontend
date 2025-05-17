@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router';
-import { Dropdown, DropdownItem } from '../components/Dropdown';
-import { Modal } from '../components/Dialog';
-import { UserAvatar } from '../components/Avatar';
-import { ToastNotification } from '../components/Toast';
-import { SelectMenu, SelectOption } from '../components/Select';
+import { Dropdown, DropdownItem } from '../components/generic/Dropdown';
+import { Modal } from '../components/generic/Dialog';
+import { UserAvatar } from '../components/generic/Avatar';
+import { ToastNotification } from '../components/generic/Toast';
+import { SelectMenu, SelectOption } from '../components/generic/Select';
 
 const Home: React.FC = () => {
     const [showToast, setShowToast] = useState<boolean>(false);
