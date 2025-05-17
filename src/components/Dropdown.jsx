@@ -1,27 +1,28 @@
 import React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { HamburgerMenuIcon, ChevronRightIcon } from '@radix-ui/react-icons';
+import { ChevronRightIcon, CheckIcon } from '@radix-ui/react-icons';
 
 export function Dropdown({ items = [] }) {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <button className="dropdown-trigger">
-          <HamburgerMenuIcon />
-          Open Menu
+          Options
+          <ChevronRightIcon className="dropdown-icon" />
         </button>
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content className="dropdown-content" sideOffset={5}>
           {items.map((item, index) => (
-            <React.Fragment key={index}>
-              {item.separator && <DropdownMenu.Separator className="dropdown-separator" />}
-              <DropdownMenu.Item className="dropdown-item">
+            item.separator ? (
+              <DropdownMenu.Separator key={index} className="dropdown-separator" />
+            ) : (
+              <DropdownMenu.Item key={index} className="dropdown-item">
                 {item.label}
-                {item.icon && <ChevronRightIcon />}
+                {item.icon && <ChevronRightIcon className="dropdown-item-icon" />}
               </DropdownMenu.Item>
-            </React.Fragment>
+            )
           ))}
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
@@ -31,26 +32,32 @@ export function Dropdown({ items = [] }) {
 
 export const dropdownStyles = `
   .dropdown-trigger {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
-    background: #f3f4f6;
-    border: none;
+    background: white;
+    border: 1px solid #e5e7eb;
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
+    transition: all 0.2s ease;
   }
 
   .dropdown-trigger:hover {
-    background: #e5e7eb;
+    border-color: #000;
+  }
+
+  .dropdown-icon {
+    color: #6b7280;
   }
 
   .dropdown-content {
-    min-width: 220px;
     background: white;
+    border: 1px solid #e5e7eb;
     border-radius: 6px;
     padding: 5px;
+    min-width: 180px;
     box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35),
                 0 10px 20px -15px rgba(22, 23, 24, 0.2);
     animation-duration: 400ms;
@@ -75,11 +82,16 @@ export const dropdownStyles = `
     border-radius: 4px;
     cursor: pointer;
     outline: none;
+    user-select: none;
     transition: background-color 0.2s ease;
   }
 
   .dropdown-item:hover {
-    background: #f3f4f6;
+    background: #f8f9fa;
+  }
+
+  .dropdown-item-icon {
+    color: #6b7280;
   }
 
   .dropdown-separator {
