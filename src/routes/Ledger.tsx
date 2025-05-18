@@ -37,9 +37,9 @@ export default function LedgerRouteContent() {
     };
 
     return (
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex min-h-screen bg-gray-50">
             {/* Sidebar */}
-            <aside className="w-64 bg-white p-5 shadow-lg">
+            <aside className="w-64 bg-white p-5 shadow-lg flex-shrink-0">
                 <div className="mb-10 text-2xl font-bold text-green-600 flex items-center">
                     <HiOutlineChartBarSquare className="text-3xl mr-2 text-green-500" />
                     Ledger Finance
@@ -74,10 +74,13 @@ export default function LedgerRouteContent() {
                 </nav>
             </aside>
 
-            {/* Main Content */}
-            <main className="flex-1 p-8 overflow-y-auto">
-                {renderView()}
-            </main>
+            {/* Main Content Wrapper for Centering */}
+            <div className="flex-1 flex justify-center items-start">
+                {/* Actual Main Content Area */}
+                <main className="max-w-5xl w-full p-8">
+                    {renderView()}
+                </main>
+            </div>
         </div>
     );
 } 

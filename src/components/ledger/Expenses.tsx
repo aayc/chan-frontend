@@ -8,16 +8,27 @@ interface ExpenseGroup {
     spent: number;
     budget: number;
     color?: string;
+    formattedCategory?: string;
+}
+
+interface TrendCategory {
+    name: string;
+    formattedCategory: string;
+    percentageChange: number;
+    currentSpent: number;
+    previousSpent: number;
 }
 
 const categoryColors: Record<string, string> = {
-    'Housing': 'bg-blue-500',
-    'Food & Dining': 'bg-green-500',
-    'Transportation': 'bg-yellow-500',
-    'Entertainment': 'bg-purple-500',
-    'Utilities': 'bg-pink-500',
-    'Healthcare': 'bg-red-500',
-    'Personal Care': 'bg-indigo-500',
+    'rent': 'bg-blue-500',
+    'dining': 'bg-green-500',
+    'groceries': 'bg-yellow-500',
+    'commute': 'bg-purple-500',
+    'gifts': 'bg-pink-500',
+    'travel': 'bg-blue-500',
+    'gas': 'bg-indigo-500',
+    'insurance': 'bg-orange-500',
+    'car:maintenance': 'bg-teal-500',
     'Default': 'bg-gray-500',
 };
 
@@ -36,13 +47,16 @@ export default function Expenses() {
     const [monthlyBudgetsDisplay, setMonthlyBudgetsDisplay] = useState<ExpenseGroup[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'monthly' | 'categories' | 'trends'>('monthly');
 
     const [totalBudget, setTotalBudget] = useState(0);
     const [totalSpent, setTotalSpent] = useState(0);
 
     // State for Yearly Expenses & Budgets (dynamic)
     const [yearlyBudgetsDisplay, setYearlyBudgetsDisplay] = useState<ExpenseGroup[]>([]);
+
+    // New state for Top Spend and Trends
+    const [topSpendCategories, setTopSpendCategories] = useState<ExpenseGroup[]>([]);
+    const [trendCategories, setTrendCategories] = useState<TrendCategory[]>([]);
 
     const initialCurrentMonth = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
     const [selectedMonth, setSelectedMonth] = useState<string>(initialCurrentMonth);
@@ -120,7 +134,8 @@ export default function Expenses() {
             name: toTitleCase(budget.formattedCategory),
             spent: currentMonthExpenses[budget.formattedCategory] || 0,
             budget: budget.amount,
-            color: getCategoryColor(budget.formattedCategory) // Use original for color mapping
+            color: getCategoryColor(budget.formattedCategory),
+            formattedCategory: budget.formattedCategory
         }));
 
         setMonthlyBudgetsDisplay(recurring);
@@ -129,15 +144,48 @@ export default function Expenses() {
         setTotalBudget(currentTotalBudget);
         setTotalSpent(currentTotalSpent);
 
+        // Calculate Top Spend (Top 5 by spent amount)
+        const sortedBySpend = [...recurring].sort((a, b) => b.spent - a.spent);
+        setTopSpendCategories(sortedBySpend.slice(0, 5));
+
+        // Calculate Trends
+        const prevMonthDate = new Date(targetDateForExpenses);
+        prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+        const prevMonthExpenses = calculateMonthlyExpenses(prevMonthDate, allTransactions);
+
+        const trends: TrendCategory[] = [];
+        const allCategoryKeysForTrends = new Set<string>();
+        recurring.forEach(item => allCategoryKeysForTrends.add(item.formattedCategory!));
+        Object.keys(prevMonthExpenses).forEach(key => allCategoryKeysForTrends.add(key));
+
+        allCategoryKeysForTrends.forEach(categoryKey => {
+            const currentCategoryData = recurring.find(r => r.formattedCategory === categoryKey);
+            const currentSpent = currentCategoryData?.spent || currentMonthExpenses[categoryKey] || 0;
+            const prevSpent = prevMonthExpenses[categoryKey] || 0;
+            const categoryName = currentCategoryData?.name || toTitleCase(categoryKey);
+
+            if (prevSpent > 0) {
+                const percentageChange = (currentSpent - prevSpent) / prevSpent;
+                if (Math.abs(percentageChange) > 0.20) {
+                    trends.push({
+                        name: categoryName,
+                        formattedCategory: categoryKey,
+                        percentageChange: percentageChange,
+                        currentSpent: currentSpent,
+                        previousSpent: prevSpent,
+                    });
+                }
+            }
+        });
+        setTrendCategories(trends.sort((a, b) => Math.abs(b.percentageChange) - Math.abs(a.percentageChange)));
+
         // Calculate and set dynamic Yearly Budgets and Spent
         const yearlyBudgetsData = allBudgets.filter(b => b.period === BudgetPeriod.Yearly);
         const dynamicYearlyDisplay: ExpenseGroup[] = [];
 
         for (const budget of yearlyBudgetsData) {
             let yearlySpentForCategory = 0;
-            const categoryKey = budget.formattedCategory; // e.g., 'travel', 'insurance', 'car:maintenance'
-            // Construct the account prefix to search for, assuming joint expenses for these yearly items
-            // This might need to be more flexible if yearly budgets aren't always for 'joint:expenses:'
+            const categoryKey = budget.formattedCategory;
             const accountToTrack = `joint:expenses:${categoryKey}`;
 
             for (const transaction of allTransactions) {
@@ -153,15 +201,15 @@ export default function Expenses() {
                 name: toTitleCase(categoryKey),
                 spent: yearlySpentForCategory,
                 budget: budget.amount,
-                color: getCategoryColor(categoryKey) // Use original category key for color consistency
+                color: getCategoryColor(categoryKey)
             });
         }
-        setYearlyBudgetsDisplay(dynamicYearlyDisplay.sort((a, b) => b.budget - a.budget)); // Sort by budget amount, highest to lowest
+        setYearlyBudgetsDisplay(dynamicYearlyDisplay.sort((a, b) => b.budget - a.budget));
 
         setError(null);
         setLoading(false);
 
-    }, [selectedMonth, allTransactions, allBudgets, loading]);
+    }, [selectedMonth, allTransactions, allBudgets]);
 
     if (loading && monthlyBudgetsDisplay.length === 0) {
         return <div className="p-6">Loading expenses data...</div>;
@@ -200,16 +248,6 @@ export default function Expenses() {
         </div>
     );
 
-    const TabButton: React.FC<{ title: string; isActive: boolean; onClick: () => void; }> = ({ title, isActive, onClick }) => (
-        <button
-            onClick={onClick}
-            className={`px-4 py-2 mr-2 rounded-lg font-medium transition-colors
-                        ${isActive ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'}`}
-        >
-            {title}
-        </button>
-    );
-
     const targetYearForDisplay = selectedMonth.split('-')[0];
 
     return (
@@ -232,48 +270,67 @@ export default function Expenses() {
                 <SummaryCard title="Budget Used" text={`${budgetUsedPercentage.toFixed(1)}`} isPercentage={true} currency="" />
             </div>
 
-            <div className="border-b border-gray-200">
-                <nav className="-mb-px flex">
-                    <TabButton title="Monthly Budgets" isActive={activeTab === 'monthly'} onClick={() => setActiveTab('monthly')} />
-                    <TabButton title="Categories" isActive={activeTab === 'categories'} onClick={() => setActiveTab('categories')} />
-                    <TabButton title="Trends" isActive={activeTab === 'trends'} onClick={() => setActiveTab('trends')} />
-                </nav>
-            </div>
-
-            <div>
-                {activeTab === 'monthly' && (
-                    <div className="bg-white p-6 rounded-xl shadow">
-                        <div className="space-y-5">
-                            {monthlyBudgetsDisplay.map((expense) => (
-                                <div key={expense.name}>
-                                    <div className="flex items-center mb-1.5">
-                                        <span className={`w-3 h-3 rounded-full mr-3 ${expense.color}`}></span>
-                                        <span className="text-sm font-medium text-gray-700 flex-1">{expense.name}</span>
-                                        <div className="text-right">
-                                            <span className={`text-sm font-medium ${expense.spent > expense.budget ? 'text-red-600' : 'text-gray-700'}`}>
-                                                ${expense.spent.toFixed(0)}
-                                            </span>
-                                            <span className="text-xs text-gray-500"> / ${expense.budget.toFixed(0)}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <div className="flex-grow h-2 bg-gray-200 rounded-full overflow-hidden relative" style={{ marginLeft: '1.75rem' }}>
-                                            <div
-                                                className={`h-full ${expense.spent > expense.budget ? 'bg-red-500' : 'bg-blue-600'}`}
-                                                style={{ width: `${Math.min((expense.spent / expense.budget) * 100, 100)}%` }}
-                                            />
-                                        </div>
-                                        <span className="text-xs text-gray-500 ml-3 w-10 text-right">
-                                            {expense.budget > 0 ? Math.round((expense.spent / expense.budget) * 100) : 0}%
+            {/* New Layout for Monthly, Top Spend, and Trends */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Monthly Budgets Card (takes 2 columns on large screens) */}
+                <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow">
+                    <h2 className="text-xl font-semibold mb-6 text-gray-800">Monthly Budgets</h2>
+                    <div className="space-y-5">
+                        {monthlyBudgetsDisplay.map((expense) => (
+                            <div key={expense.name}>
+                                <div className="flex items-center mb-1.5">
+                                    <span className={`w-3 h-3 rounded-full mr-3 ${expense.color}`}></span>
+                                    <span className="text-sm font-medium text-gray-700 flex-1">{expense.name}</span>
+                                    <div className="text-right">
+                                        <span className={`text-sm font-medium ${expense.spent > expense.budget ? 'text-red-600' : 'text-gray-700'}`}>
+                                            ${expense.spent.toFixed(0)}
                                         </span>
+                                        <span className="text-xs text-gray-500"> / ${expense.budget.toFixed(0)}</span>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                                <div className="flex items-center">
+                                    <div className="flex-grow h-2 bg-gray-200 rounded-full overflow-hidden relative" style={{ marginLeft: '1.75rem' }}>
+                                        <div
+                                            className={`h-full ${expense.spent > expense.budget ? 'bg-red-500' : expense.color ? expense.color.replace('bg-', 'bg-') : 'bg-blue-600'}`}
+                                            style={{ width: `${expense.budget > 0 ? Math.min((expense.spent / expense.budget) * 100, 100) : 0}%` }}
+                                        />
+                                    </div>
+                                    <span className="text-xs text-gray-500 ml-3 w-10 text-right">
+                                        {expense.budget > 0 ? Math.round((expense.spent / expense.budget) * 100) : 0}%
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                )}
-                {activeTab === 'categories' && <div className="p-4">Categories content will go here.</div>}
-                {activeTab === 'trends' && <div className="p-4">Trends content will go here.</div>}
+                </div>
+
+                {/* Right column for stacked cards */}
+                <div className="space-y-6">
+                    {/* Trends Card */}
+                    <div className="bg-white p-6 rounded-xl shadow">
+                        <h2 className="text-xl font-semibold mb-4 text-gray-800">Spending Trends</h2>
+                        {trendCategories.length > 0 ? (
+                            <ul className="space-y-3">
+                                {trendCategories.slice(0, 8).map((trend) => (
+                                    <li key={trend.name} className="text-sm">
+                                        <div className="flex items-center">
+                                            <span className={`w-2.5 h-2.5 rounded-full mr-3 ${getCategoryColor(trend.formattedCategory)}`}></span>
+                                            <span className="flex-grow text-gray-700">{trend.name}</span>
+                                            <span className={`font-medium ${trend.percentageChange > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                                                {trend.percentageChange > 0 ? '+' : ''}{(trend.percentageChange * 100).toFixed(0)}%
+                                            </span>
+                                        </div>
+                                        <div className="text-xs text-gray-500 ml-[1.375rem] mt-0.5">
+                                            ${trend.previousSpent.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} → ${trend.currentSpent.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-gray-500">No significant spending changes compared to the previous month.</p>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {/* Yearly Expenses Section */}
@@ -299,8 +356,8 @@ export default function Expenses() {
                                     <div className="flex items-center">
                                         <div className="flex-grow h-2 bg-gray-200 rounded-full overflow-hidden relative" style={{ marginLeft: '1.75rem' }}>
                                             <div
-                                                className={`h-full ${expense.spent > expense.budget ? 'bg-red-500' : 'bg-blue-600'}`}
-                                                style={{ width: `${Math.min((expense.spent / expense.budget) * 100, 100)}%` }}
+                                                className={`h-full ${expense.spent > expense.budget ? 'bg-red-500' : expense.color ? expense.color.replace('bg-', 'bg-') : 'bg-blue-600'}`}
+                                                style={{ width: `${expense.budget > 0 ? Math.min((expense.spent / expense.budget) * 100, 100) : 0}%` }}
                                             />
                                         </div>
                                         <span className="text-xs text-gray-500 ml-3 w-10 text-right">

@@ -3,7 +3,7 @@ import { Outlet, Link } from 'react-router';
 
 const Root: React.FC = () => {
     return (
-        <div className="root">
+        <div className="root w-full min-h-screen">
             <nav>
             </nav>
 
