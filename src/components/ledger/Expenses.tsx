@@ -41,6 +41,9 @@ export default function Expenses() {
     const [totalBudget, setTotalBudget] = useState(0);
     const [totalSpent, setTotalSpent] = useState(0);
 
+    // State for Yearly Expenses & Budgets (dynamic)
+    const [yearlyBudgetsDisplay, setYearlyBudgetsDisplay] = useState<ExpenseGroup[]>([]);
+
     const initialCurrentMonth = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
     const [selectedMonth, setSelectedMonth] = useState<string>(initialCurrentMonth);
     const [allTransactions, setAllTransactions] = useState<LedgerTransaction[]>([]);
@@ -84,14 +87,14 @@ export default function Expenses() {
     useEffect(() => {
         if (allTransactions.length === 0 || allBudgets.length === 0) {
             // Don't process until initial data is loaded
-            // If initialLoad sets loading to false too early, this check is important.
-            if (!loading && allTransactions.length > 0 && allBudgets.length > 0) setLoading(false); // ensure loading is false if data came through
+            if (!loading && allTransactions.length > 0 && allBudgets.length > 0) setLoading(false);
             return;
         }
-        setLoading(true); // Set loading true for processing a new month
+        setLoading(true);
 
         const [year, month] = selectedMonth.split('-').map(Number);
         const targetDateForExpenses = new Date(year, month - 1);
+        const targetYear = targetDateForExpenses.getFullYear();
 
         const calculateMonthlyExpenses = (targetDate: Date, currentTransactions: LedgerTransaction[]): Record<string, number> => {
             const monthly: Record<string, number> = {};
@@ -125,12 +128,42 @@ export default function Expenses() {
         const currentTotalSpent = recurring.reduce((sum, b) => sum + b.spent, 0);
         setTotalBudget(currentTotalBudget);
         setTotalSpent(currentTotalSpent);
-        setError(null); // Clear previous processing errors
-        setLoading(false); // Processing finished
 
-    }, [selectedMonth, allTransactions, allBudgets, loading]); // Added loading to dep array to ensure it runs if initial load was too fast
+        // Calculate and set dynamic Yearly Budgets and Spent
+        const yearlyBudgetsData = allBudgets.filter(b => b.period === BudgetPeriod.Yearly);
+        const dynamicYearlyDisplay: ExpenseGroup[] = [];
 
-    if (loading && monthlyBudgetsDisplay.length === 0) { // Show loading only if there's no data yet from a previous month
+        for (const budget of yearlyBudgetsData) {
+            let yearlySpentForCategory = 0;
+            const categoryKey = budget.formattedCategory; // e.g., 'travel', 'insurance', 'car:maintenance'
+            // Construct the account prefix to search for, assuming joint expenses for these yearly items
+            // This might need to be more flexible if yearly budgets aren't always for 'joint:expenses:'
+            const accountToTrack = `joint:expenses:${categoryKey}`;
+
+            for (const transaction of allTransactions) {
+                if (transaction.date.getFullYear() === targetYear) {
+                    for (const posting of transaction.postings) {
+                        if (posting.amount && posting.amount > 0 && posting.account.startsWith(accountToTrack)) {
+                            yearlySpentForCategory += posting.amount;
+                        }
+                    }
+                }
+            }
+            dynamicYearlyDisplay.push({
+                name: toTitleCase(categoryKey),
+                spent: yearlySpentForCategory,
+                budget: budget.amount,
+                color: getCategoryColor(categoryKey) // Use original category key for color consistency
+            });
+        }
+        setYearlyBudgetsDisplay(dynamicYearlyDisplay.sort((a, b) => b.budget - a.budget)); // Sort by budget amount, highest to lowest
+
+        setError(null);
+        setLoading(false);
+
+    }, [selectedMonth, allTransactions, allBudgets, loading]);
+
+    if (loading && monthlyBudgetsDisplay.length === 0) {
         return <div className="p-6">Loading expenses data...</div>;
     }
 
@@ -177,7 +210,7 @@ export default function Expenses() {
         </button>
     );
 
-    const selectedMonthLabel = uniqueMonthsForDropdown.find(opt => opt.value === selectedMonth)?.label || `Data for ${selectedMonth}`;
+    const targetYearForDisplay = selectedMonth.split('-')[0];
 
     return (
         <div className="space-y-8">
@@ -241,6 +274,46 @@ export default function Expenses() {
                 )}
                 {activeTab === 'categories' && <div className="p-4">Categories content will go here.</div>}
                 {activeTab === 'trends' && <div className="p-4">Trends content will go here.</div>}
+            </div>
+
+            {/* Yearly Expenses Section */}
+            <div className="bg-white p-6 rounded-xl shadow mt-8">
+                <h2 className="text-xl font-semibold mb-4 text-gray-800">Yearly Budgets ({targetYearForDisplay})</h2>
+                <div className="space-y-5">
+                    {yearlyBudgetsDisplay.length > 0 ? (
+                        yearlyBudgetsDisplay.map((expense) => (
+                            <div key={expense.name}>
+                                <div className="flex items-center mb-1.5">
+                                    <span className={`w-3 h-3 rounded-full mr-3 ${expense.color}`}></span>
+                                    <span className="text-sm font-medium text-gray-700 flex-1">{expense.name.replace(':', ' ')}</span>
+                                    <div className="text-right">
+                                        <span className={`text-sm font-medium ${expense.spent > expense.budget && expense.budget > 0 ? 'text-red-600' : 'text-gray-700'}`}>
+                                            ${expense.spent.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                        </span>
+                                        {expense.budget > 0 &&
+                                            <span className="text-xs text-gray-500"> / ${expense.budget.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                                        }
+                                    </div>
+                                </div>
+                                {expense.budget > 0 && (
+                                    <div className="flex items-center">
+                                        <div className="flex-grow h-2 bg-gray-200 rounded-full overflow-hidden relative" style={{ marginLeft: '1.75rem' }}>
+                                            <div
+                                                className={`h-full ${expense.spent > expense.budget ? 'bg-red-500' : 'bg-blue-600'}`}
+                                                style={{ width: `${Math.min((expense.spent / expense.budget) * 100, 100)}%` }}
+                                            />
+                                        </div>
+                                        <span className="text-xs text-gray-500 ml-3 w-10 text-right">
+                                            {Math.round((expense.spent / expense.budget) * 100)}%
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-sm text-gray-500">No yearly budgets defined or found for {targetYearForDisplay}.</p>
+                    )}
+                </div>
             </div>
         </div>
     );

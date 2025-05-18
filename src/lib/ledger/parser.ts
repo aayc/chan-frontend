@@ -132,6 +132,10 @@ export class LedgerParser {
                     const amountString = budgetMatch[2].replace(/,/g, ''); // Remove commas for parsing
                     const amount = parseFloat(amountString);
 
+                    if (!category.startsWith('budget:')) {
+                        continue;
+                    }
+
                     if (!isNaN(amount)) {
                         const budget: Budget = {
                             category,
