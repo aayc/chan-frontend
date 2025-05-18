@@ -8,6 +8,7 @@ import ErrorPage from './routes/ErrorPage';
 import Home from './routes/Home';
 import Ledger from './routes/Ledger';
 import Expenses from './components/ledger/Expenses';
+import Transactions from './components/ledger/Transactions';
 import Login from './routes/Login';
 
 import './index.css';
@@ -27,13 +28,15 @@ const router = createBrowserRouter([
                 path: 'ledger',
                 element: <Ledger />,
                 children: [
-                    { index: true, element: <div>Select a category from the sidebar.</div> }, // Default content for /ledger
-                    { path: 'expenses', element: <Expenses /> },
-                    // TODO: Add other ledger sub-routes here e.g., income, assets, etc.
-                    // { path: 'income', element: <Income /> }, 
-                    // { path: 'assets', element: <Assets /> },
-                    // { path: 'investments', element: <Investments /> },
-                    // { path: 'transactions', element: <Transactions /> },
+                    { index: true, element: <div>Select a category from the sidebar.</div> },
+                    {
+                        path: 'expenses',
+                        element: <Expenses />,
+                    },
+                    {
+                        path: 'transactions',
+                        element: <Transactions />,
+                    },
                 ],
             },
             { path: 'login', element: <Login /> },

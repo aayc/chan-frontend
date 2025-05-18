@@ -45,11 +45,16 @@ export class LedgerParser {
             }
 
             // Check for posting (indented line with account and amount)
-            const postingMatch = trimmedLine.match(/^\s+([^;]+?)(?:\s+([-+]?\d+(?:\.\d+)?)\s*([A-Z]{3})?)?$/);
+            const postingMatch = trimmedLine.match(/^\s+([^;]+?)(?:\s+([$])?\s*([-+]?\d+(?:\.\d+)?)(?:\s+([A-Z]{3}))?)?$/);
             if (postingMatch && currentTransaction?.postings !== undefined) {
                 const account = postingMatch[1].trim();
-                const amount = postingMatch[2] ? parseFloat(postingMatch[2]) : null;
-                const currency = postingMatch[3] || null;
+                const dollarSymbol = postingMatch[2]; // Matched '$' symbol or undefined
+                const amountString = postingMatch[3]; // Amount as string or undefined
+                const currencyCode = postingMatch[4]; // 3-letter currency code or undefined
+
+                const amount = amountString ? parseFloat(amountString) : null;
+                // Prioritize 3-letter code, then dollar symbol, then null
+                const currency = currencyCode ? currencyCode : (dollarSymbol ? dollarSymbol : null);
 
                 const posting: LedgerPosting = {
                     account,
