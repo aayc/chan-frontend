@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import Expenses from '../components/ledger/Expenses';
 import Transactions from '../components/ledger/Transactions';
+import Income from '../components/ledger/Income';
 import {
     HiOutlineCurrencyDollar,
     HiOutlineArrowsRightLeft,
     HiOutlineBuildingOffice2,
     HiOutlineChartPie,
-    HiOutlineChartBarSquare
+    HiOutlineChartBarSquare,
+    HiOutlineCreditCard,
+    HiOutlineBanknotes
 } from 'react-icons/hi2';
 // Import other components like Assets, Investments when they are ready
 
@@ -22,7 +25,7 @@ const SidebarItem: React.FC<{ title: string; isActive: boolean; onClick: () => v
 );
 
 export default function LedgerRouteContent() {
-    const [activeView, setActiveView] = useState<'expenses' | 'transactions' | 'assets' | 'investments'>('expenses');
+    const [activeView, setActiveView] = useState<'expenses' | 'transactions' | 'assets' | 'income'>('expenses');
 
     const renderView = () => {
         switch (activeView) {
@@ -30,7 +33,9 @@ export default function LedgerRouteContent() {
                 return <Expenses />;
             case 'transactions':
                 return <Transactions />;
-            // Add cases for 'assets', 'investments' later
+            // Add cases for 'assets', 'income' later
+            case 'income':
+                return <Income />;
             default:
                 return <Expenses />;
         }
@@ -65,10 +70,10 @@ export default function LedgerRouteContent() {
                             icon={<HiOutlineBuildingOffice2 />}
                         />
                         <SidebarItem
-                            title="Investments"
-                            isActive={activeView === 'investments'}
-                            onClick={() => setActiveView('investments')}
-                            icon={<HiOutlineChartPie />}
+                            title="Income"
+                            isActive={activeView === 'income'}
+                            onClick={() => setActiveView('income')}
+                            icon={<HiOutlineBanknotes />}
                         />
                     </ul>
                 </nav>
