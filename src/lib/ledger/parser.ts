@@ -45,16 +45,19 @@ export class LedgerParser {
             }
 
             // Check for posting (indented line with account and amount)
-            const postingMatch = trimmedLine.match(/^\s+([^;]+?)(?:\s+([$])?\s*([-+]?\d+(?:\.\d+)?)(?:\s+([A-Z]{3}))?)?$/);
+            const postingMatch = trimmedLine.match(/^([^;]+?)(?:\s+([$])?\s*([-+]?\d{1,3}(?:,\d{3})*(?:\.\d+)?|[-+]?\d*(?:\.\d+)?)?)?$/);
             if (postingMatch && currentTransaction?.postings !== undefined) {
                 const account = postingMatch[1].trim();
                 const dollarSymbol = postingMatch[2]; // Matched '$' symbol or undefined
-                const amountString = postingMatch[3]; // Amount as string or undefined
-                const currencyCode = postingMatch[4]; // 3-letter currency code or undefined
+                let amountString = postingMatch[3]; // Amount as string or undefined
+
+                if (amountString) {
+                    amountString = amountString.replace(/,/g, ''); // Remove commas before parsing
+                }
 
                 const amount = amountString ? parseFloat(amountString) : null;
-                // Prioritize 3-letter code, then dollar symbol, then null
-                const currency = currencyCode ? currencyCode : (dollarSymbol ? dollarSymbol : null);
+                // Prioritize dollar symbol, then null
+                const currency = dollarSymbol ? dollarSymbol : null;
 
                 const posting: LedgerPosting = {
                     account,
@@ -107,36 +110,52 @@ export class LedgerParser {
     parseBudgets(content: string): Budget[] {
         const budgets: Budget[] = [];
         const lines = content.split('\n');
+        let currentPeriod: BudgetPeriod | null = null;
 
         for (const line of lines) {
             const trimmedLine = line.trim();
-            if (!trimmedLine || !trimmedLine.startsWith(';')) continue;
 
-            // Look for budget comments in the format:
-            // ; budget: category: amount (monthly/yearly)
-            const budgetMatch = trimmedLine.match(/;\s*budget:\s*([^:]+):\s*(\d+(?:\.\d+)?)\s*(monthly|yearly)/i);
-            if (budgetMatch) {
-                const category = budgetMatch[1].trim();
-                const amount = parseFloat(budgetMatch[2]);
-                const period = budgetMatch[3].toLowerCase() === 'yearly' ? BudgetPeriod.Yearly : BudgetPeriod.Monthly;
+            if (trimmedLine.startsWith('~ Monthly')) {
+                currentPeriod = BudgetPeriod.Monthly;
+                continue;
+            } else if (trimmedLine.startsWith('~ Yearly')) {
+                currentPeriod = BudgetPeriod.Yearly;
+                continue;
+            }
 
-                const budget: Budget = {
-                    category,
-                    amount,
-                    period,
-                    get formattedCategory() {
-                        const parts = category.split(':');
-                        if (parts.length >= 3 && parts[0] === 'budget' && parts[1] === 'expenses') {
-                            return parts.slice(2).join(':');
-                        }
-                        return category;
+            if (currentPeriod && !trimmedLine.startsWith('~')) {
+                // Budget line: budget:expenses:dining               $200.00
+                const budgetMatch = trimmedLine.match(/^([^$]+)\$([\d,]+\.?\d*)$/);
+
+                if (budgetMatch) {
+                    const category = budgetMatch[1].trim();
+                    const amountString = budgetMatch[2].replace(/,/g, ''); // Remove commas for parsing
+                    const amount = parseFloat(amountString);
+
+                    if (!isNaN(amount)) {
+                        const budget: Budget = {
+                            category,
+                            amount,
+                            period: currentPeriod,
+                            get formattedCategory() {
+                                const parts = category.split(':');
+                                // Assuming format like budget:expenses:category or budget:income:category
+                                if (parts.length >= 3 && parts[0] === 'budget' && (parts[1] === 'expenses' || parts[1] === 'income')) {
+                                    return parts.slice(2).join(':');
+                                }
+                                return category;
+                            }
+                        };
+                        budgets.push(budget);
                     }
-                };
-
-                budgets.push(budget);
+                } else if (trimmedLine.toLowerCase() === 'budget:monthly' || trimmedLine.toLowerCase() === 'budget:yearly') {
+                    // This line indicates the end of a budget period definition in the new format
+                    // but might also be a way to clear currentPeriod if not inside a section.
+                    // For now, we can just continue as the period is already set by ~ Monthly/Yearly
+                    continue;
+                }
             }
         }
-
         return budgets;
     }
 } 
