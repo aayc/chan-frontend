@@ -238,7 +238,7 @@ const Transactions: React.FC = () => {
                     )
                 })}
             </div>
-            {visibleCount < sortedTransactions.length && (
+            {visibleCount < filteredTransactions.length && (
                 <div className="text-center mt-5">
                     <button
                         onClick={handleLoadMore}
