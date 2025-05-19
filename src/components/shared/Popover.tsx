@@ -7,6 +7,7 @@ interface PopoverProps {
     onOpenChange: (open: boolean) => void;
     align?: 'start' | 'center' | 'end';
     sideOffset?: number;
+    className?: string;
 }
 
 const Popover: React.FC<PopoverProps> = ({
@@ -16,6 +17,7 @@ const Popover: React.FC<PopoverProps> = ({
     onOpenChange,
     align = 'end',
     sideOffset = 8,
+    className,
 }) => {
     const popoverRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLDivElement>(null);
@@ -51,8 +53,8 @@ const Popover: React.FC<PopoverProps> = ({
     };
 
     return (
-        <div className="relative inline-block">
-            <div ref={triggerRef} onClick={() => onOpenChange(!open)} className="cursor-pointer">
+        <div className={`relative inline-block ${className || ''}`.trim()}>
+            <div ref={triggerRef} onClick={() => onOpenChange(!open)} className="cursor-pointer w-full h-full">
                 {trigger}
             </div>
             <div

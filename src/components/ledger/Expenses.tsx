@@ -2,6 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { BudgetPeriod, LedgerTransaction } from '../../lib/ledger/types';
 import { LedgerParser } from '../../lib/ledger/parser';
 import { SelectMenu, SelectOption } from '../shared/Select';
+import Popover from '../shared/Popover';
+import Transactions from './Transactions';
 
 interface ExpenseGroup {
     name: string;
@@ -57,6 +59,8 @@ export default function Expenses() {
     // New state for Top Spend and Trends
     const [topSpendCategories, setTopSpendCategories] = useState<ExpenseGroup[]>([]);
     const [trendCategories, setTrendCategories] = useState<TrendCategory[]>([]);
+    const [activePopoverCategory, setActivePopoverCategory] = useState<string | null>(null);
+    const [activeYearlyPopoverCategory, setActiveYearlyPopoverCategory] = useState<string | null>(null); // New state for yearly popovers
 
     const initialCurrentMonth = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
     const [selectedMonth, setSelectedMonth] = useState<string>(initialCurrentMonth);
@@ -246,7 +250,8 @@ export default function Expenses() {
                 name: toTitleCase(categoryKey),
                 spent: yearlySpentForCategory,
                 budget: budget.amount,
-                color: getCategoryColor(categoryKey)
+                color: getCategoryColor(categoryKey),
+                formattedCategory: categoryKey // Ensure formattedCategory is populated
             });
         }
         setYearlyBudgetsDisplay(dynamicYearlyDisplay.sort((a, b) => b.budget - a.budget));
@@ -325,7 +330,33 @@ export default function Expenses() {
                             <div key={expense.name}>
                                 <div className="flex items-center mb-1.5">
                                     <span className={`w-3 h-3 rounded-full mr-3 ${expense.color}`}></span>
-                                    <span className="text-sm font-medium text-gray-700 flex-1">{expense.name}</span>
+                                    <Popover
+                                        className="flex-1 min-w-0"
+                                        open={!!expense.formattedCategory && activePopoverCategory === expense.formattedCategory}
+                                        onOpenChange={(isOpen) => {
+                                            if (isOpen && expense.formattedCategory) {
+                                                setActivePopoverCategory(expense.formattedCategory);
+                                            } else {
+                                                setActivePopoverCategory(null);
+                                            }
+                                        }}
+                                        trigger={
+                                            <span className="block w-full text-sm font-medium text-gray-700 cursor-pointer hover:underline truncate">
+                                                {expense.name}
+                                            </span>
+                                        }
+                                        align="start"
+                                        sideOffset={5}
+                                    >
+                                        {expense.formattedCategory && (
+                                            <div className="" style={{ width: '600px', maxHeight: '400px', overflowY: 'auto' }}>
+                                                <Transactions
+                                                    initialMonthFilter={selectedMonth}
+                                                    initialAccountFilter={`joint:expenses:${expense.formattedCategory}`}
+                                                />
+                                            </div>
+                                        )}
+                                    </Popover>
                                     <div className="text-right">
                                         <span className={`text-sm font-medium ${expense.spent > expense.budget ? 'text-red-600' : 'text-gray-700'}`}>
                                             ${expense.spent.toFixed(0)}
@@ -387,7 +418,33 @@ export default function Expenses() {
                             <div key={expense.name}>
                                 <div className="flex items-center mb-1.5">
                                     <span className={`w-3 h-3 rounded-full mr-3 ${expense.color}`}></span>
-                                    <span className="text-sm font-medium text-gray-700 flex-1">{expense.name.replace(':', ' ')}</span>
+                                    <Popover
+                                        className="flex-1 min-w-0"
+                                        open={!!expense.formattedCategory && activeYearlyPopoverCategory === expense.formattedCategory}
+                                        onOpenChange={(isOpen) => {
+                                            if (isOpen && expense.formattedCategory) {
+                                                setActiveYearlyPopoverCategory(expense.formattedCategory);
+                                            } else {
+                                                setActiveYearlyPopoverCategory(null);
+                                            }
+                                        }}
+                                        trigger={
+                                            <span className="block w-full text-sm font-medium text-gray-700 cursor-pointer hover:underline truncate">
+                                                {expense.name.replace(':', ' ')}
+                                            </span>
+                                        }
+                                        align="start"
+                                        sideOffset={5}
+                                    >
+                                        {expense.formattedCategory && (
+                                            <div className="" style={{ width: '600px', maxHeight: '400px', overflowY: 'auto' }}>
+                                                <Transactions
+                                                    initialAccountFilter={`joint:expenses:${expense.formattedCategory}`}
+                                                // No initialMonthFilter, so it shows all transactions for the account
+                                                />
+                                            </div>
+                                        )}
+                                    </Popover>
                                     <div className="text-right">
                                         <span className={`text-sm font-medium ${expense.spent > expense.budget && expense.budget > 0 ? 'text-red-600' : 'text-gray-700'}`}>
                                             ${expense.spent.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}

@@ -5,15 +5,22 @@ import { SelectMenu, SelectOption } from '../shared/Select';
 import Popover from '../shared/Popover';
 import Tag from '../shared/Tag';
 
-const Transactions: React.FC = () => {
+interface TransactionsProps {
+    initialMonthFilter?: string;
+    initialAccountFilter?: string;
+    // We might also want to pass transactions and skip fetching if this component is used in multiple places
+    // transactionsData?: LedgerTransaction[]; 
+}
+
+const Transactions: React.FC<TransactionsProps> = ({ initialMonthFilter, initialAccountFilter }) => {
     const [transactions, setTransactions] = useState<LedgerTransaction[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [sortOption, setSortOption] = useState<string>('date-desc');
     const [visibleCount, setVisibleCount] = useState<number>(100); // Pagination state
     const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState<boolean>(false); // Popover state
-    const [selectedMonths, setSelectedMonths] = useState<string[]>([]); // Filter state
-    const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]); // Filter state
+    const [selectedMonths, setSelectedMonths] = useState<string[]>(initialMonthFilter ? [initialMonthFilter] : []); // Filter state
+    const [selectedAccounts, setSelectedAccounts] = useState<string[]>(initialAccountFilter ? [initialAccountFilter] : []); // Filter state
 
     const formatDate = (date: Date): string => {
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -64,6 +71,18 @@ const Transactions: React.FC = () => {
             return monthMatch && accountMatch;
         });
     }, [transactions, sortOption, selectedMonths, selectedAccounts, sortedTransactions]);
+
+    useEffect(() => {
+        // If initial filters are set, apply them.
+        // This effect runs once on mount if the props are provided.
+        // It assumes that if these props are passed, the component shouldn't open its own filter popover initially.
+        if (initialMonthFilter) {
+            setSelectedMonths([initialMonthFilter]);
+        }
+        if (initialAccountFilter) {
+            setSelectedAccounts([initialAccountFilter]);
+        }
+    }, [initialMonthFilter, initialAccountFilter]);
 
     useEffect(() => {
         async function fetchData() {
