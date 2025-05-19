@@ -10,8 +10,10 @@ import Ledger from './routes/Ledger';
 import Expenses from './components/ledger/Expenses';
 import Transactions from './components/ledger/Transactions';
 import Login from './routes/Login';
+import ProtectedRoute from './routes/ProtectedRoute';
 
 import './index.css';
+import { componentStyles } from './components/shared/styles';
 
 const router = createBrowserRouter([
     {
@@ -21,19 +23,24 @@ const router = createBrowserRouter([
         children: [
             { index: true, element: <Home /> },
             {
-                path: 'ledger',
-                element: <Ledger />,
+                element: <ProtectedRoute />,
                 children: [
-                    { index: true, element: <div>Select a category from the sidebar.</div> },
                     {
-                        path: 'expenses',
-                        element: <Expenses />,
+                        path: 'ledger',
+                        element: <Ledger />,
+                        children: [
+                            { index: true, element: <div>Select a category from the sidebar.</div> },
+                            {
+                                path: 'expenses',
+                                element: <Expenses />,
+                            },
+                            {
+                                path: 'transactions',
+                                element: <Transactions />,
+                            },
+                        ],
                     },
-                    {
-                        path: 'transactions',
-                        element: <Transactions />,
-                    },
-                ],
+                ]
             },
             { path: 'login', element: <Login /> },
         ],
@@ -50,6 +57,7 @@ const App: React.FC = () => {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
+        <style>{componentStyles}</style>
         <App />
     </React.StrictMode>
 ); 
