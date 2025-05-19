@@ -104,6 +104,31 @@ export class LedgerParser {
             } as LedgerTransaction);
         }
 
+        // Calculate implicit amounts
+        for (const transaction of transactions) {
+            let sumOfKnownAmounts = 0;
+            let postingWithNullAmount: LedgerPosting | null = null;
+            let nullAmountCount = 0;
+
+            for (const posting of transaction.postings) {
+                if (posting.amount === null) {
+                    postingWithNullAmount = posting;
+                    nullAmountCount++;
+                } else {
+                    sumOfKnownAmounts += posting.amount;
+                }
+            }
+
+            if (nullAmountCount === 1 && postingWithNullAmount) {
+                postingWithNullAmount.amount = -sumOfKnownAmounts;
+            } else if (nullAmountCount > 1) {
+                // Handle cases with multiple null amounts if necessary,
+                // for now, this will leave them as null.
+                // Or throw an error:
+                // throw new Error(`Transaction on ${transaction.date.toISOString().split('T')[0]} has multiple postings with unspecified amounts.`);
+            }
+        }
+
         return transactions;
     }
 

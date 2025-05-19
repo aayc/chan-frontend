@@ -117,7 +117,7 @@ export default function Expenses() {
                     transaction.date.getMonth() === targetDate.getMonth()) {
                     for (const posting of transaction.postings) {
                         const expenseAccountMatch = posting.account.match(/(?:[^:]+:)?expenses:([^;]+)/);
-                        if (posting.amount && posting.amount > 0 && expenseAccountMatch) {
+                        if (posting.amount !== null && expenseAccountMatch && posting.account.startsWith('joint:')) {
                             const category = expenseAccountMatch[1];
                             monthly[category] = (monthly[category] || 0) + posting.amount;
                         }
@@ -148,36 +148,81 @@ export default function Expenses() {
         const sortedBySpend = [...recurring].sort((a, b) => b.spent - a.spent);
         setTopSpendCategories(sortedBySpend.slice(0, 5));
 
-        // Calculate Trends
-        const prevMonthDate = new Date(targetDateForExpenses);
-        prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
-        const prevMonthExpenses = calculateMonthlyExpenses(prevMonthDate, allTransactions);
+        // Calculate Trends based on average of all previous months
+        const averagePreviousMonthsExpenses: Record<string, number> = {};
+        const categoryTotalsAcrossPreviousMonths: Record<string, number> = {};
+        const previousMonthYearKeys = new Set<string>();
+        const firstDayOfSelectedMonth = new Date(year, month - 1, 1); // year, month are from selectedMonth
+
+        for (const transaction of allTransactions) {
+            if (transaction.date < firstDayOfSelectedMonth) {
+                const transactionMonthYear = `${transaction.date.getFullYear()}-${(transaction.date.getMonth() + 1).toString().padStart(2, '0')}`;
+                previousMonthYearKeys.add(transactionMonthYear);
+
+                for (const posting of transaction.postings) {
+                    const expenseAccountMatch = posting.account.match(/(?:[^:]+:)?expenses:([^;]+)/);
+                    if (posting.amount && posting.amount > 0 && expenseAccountMatch) {
+                        const category = expenseAccountMatch[1];
+                        categoryTotalsAcrossPreviousMonths[category] = (categoryTotalsAcrossPreviousMonths[category] || 0) + posting.amount;
+                    }
+                }
+            }
+        }
+
+        const numberOfUniquePreviousMonths = previousMonthYearKeys.size;
+
+        if (numberOfUniquePreviousMonths > 0) {
+            for (const categoryKey in categoryTotalsAcrossPreviousMonths) {
+                averagePreviousMonthsExpenses[categoryKey] = categoryTotalsAcrossPreviousMonths[categoryKey] / numberOfUniquePreviousMonths;
+            }
+        }
 
         const trends: TrendCategory[] = [];
         const allCategoryKeysForTrends = new Set<string>();
-        recurring.forEach(item => allCategoryKeysForTrends.add(item.formattedCategory!));
-        Object.keys(prevMonthExpenses).forEach(key => allCategoryKeysForTrends.add(key));
+        Object.keys(currentMonthExpenses).forEach(key => allCategoryKeysForTrends.add(key));
+        Object.keys(averagePreviousMonthsExpenses).forEach(key => allCategoryKeysForTrends.add(key));
 
         allCategoryKeysForTrends.forEach(categoryKey => {
             const currentCategoryData = recurring.find(r => r.formattedCategory === categoryKey);
-            const currentSpent = currentCategoryData?.spent || currentMonthExpenses[categoryKey] || 0;
-            const prevSpent = prevMonthExpenses[categoryKey] || 0;
+            const currentSpent = currentMonthExpenses[categoryKey] || 0;
+            const avgPrevSpent = averagePreviousMonthsExpenses[categoryKey] || 0;
             const categoryName = currentCategoryData?.name || toTitleCase(categoryKey);
 
-            if (prevSpent > 0) {
-                const percentageChange = (currentSpent - prevSpent) / prevSpent;
-                if (Math.abs(percentageChange) > 0.20) {
+            if (avgPrevSpent > 0) {
+                const percentageChange = (currentSpent - avgPrevSpent) / avgPrevSpent;
+                // Show trend if change is > 20% or if spending dropped to 0 from a positive average
+                if (Math.abs(percentageChange) > 0.20 || (currentSpent === 0 && avgPrevSpent > 0)) {
                     trends.push({
                         name: categoryName,
                         formattedCategory: categoryKey,
                         percentageChange: percentageChange,
                         currentSpent: currentSpent,
-                        previousSpent: prevSpent,
+                        previousSpent: avgPrevSpent, // This field now holds the average of previous months
                     });
                 }
+            } else if (currentSpent > 0) { // avgPrevSpent is 0 or undefined, but currentSpent > 0
+                trends.push({
+                    name: categoryName,
+                    formattedCategory: categoryKey,
+                    percentageChange: Infinity, // Signifies a new or newly significant expense
+                    currentSpent: currentSpent,
+                    previousSpent: 0,
+                });
             }
         });
-        setTrendCategories(trends.sort((a, b) => Math.abs(b.percentageChange) - Math.abs(a.percentageChange)));
+
+        // Sort trends: New items (Infinity%) first (by current spend), then by largest absolute percentage change
+        setTrendCategories(trends.sort((a, b) => {
+            const isAInfinity = a.percentageChange === Infinity;
+            const isBInfinity = b.percentageChange === Infinity;
+
+            if (isAInfinity && !isBInfinity) return -1;
+            if (!isAInfinity && isBInfinity) return 1;
+            if (isAInfinity && isBInfinity) {
+                return b.currentSpent - a.currentSpent; // Sort new items by current spend desc
+            }
+            return Math.abs(b.percentageChange) - Math.abs(a.percentageChange);
+        }));
 
         // Calculate and set dynamic Yearly Budgets and Spent
         const yearlyBudgetsData = allBudgets.filter(b => b.period === BudgetPeriod.Yearly);
@@ -191,7 +236,7 @@ export default function Expenses() {
             for (const transaction of allTransactions) {
                 if (transaction.date.getFullYear() === targetYear) {
                     for (const posting of transaction.postings) {
-                        if (posting.amount && posting.amount > 0 && posting.account.startsWith(accountToTrack)) {
+                        if (posting.amount !== null && posting.account.startsWith(accountToTrack)) {
                             yearlySpentForCategory += posting.amount;
                         }
                     }
@@ -327,7 +372,7 @@ export default function Expenses() {
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-sm text-gray-500">No significant spending changes compared to the previous month.</p>
+                            <p className="text-sm text-gray-500">No significant spending changes compared to historical averages.</p>
                         )}
                     </div>
                 </div>
