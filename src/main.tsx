@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router';
-import { Auth0Provider } from '@auth0/auth0-react';
+import { AuthProvider } from './AuthContext';
 
 import Root from './routes/Root';
 import ErrorPage from './routes/ErrorPage';
@@ -12,10 +12,6 @@ import Transactions from './components/ledger/Transactions';
 import Login from './routes/Login';
 
 import './index.css';
-import { componentStyles } from './components/shared/styles';
-
-const AUTH0_DOMAIN = import.meta.env.VITE_AUTH0_DOMAIN;
-const AUTH0_CLIENT_ID = import.meta.env.VITE_AUTH0_CLIENT_ID;
 
 const router = createBrowserRouter([
     {
@@ -45,29 +41,15 @@ const router = createBrowserRouter([
 ]);
 
 const App: React.FC = () => {
-    if (!AUTH0_DOMAIN || !AUTH0_CLIENT_ID) {
-        console.warn(
-            'Auth0 domain or client ID not set. Authentication will be disabled.'
-        );
-        return <RouterProvider router={router} />;
-    }
-
     return (
-        <Auth0Provider
-            domain={AUTH0_DOMAIN}
-            clientId={AUTH0_CLIENT_ID}
-            authorizationParams={{
-                redirect_uri: window.location.origin,
-            }}
-        >
+        <AuthProvider>
             <RouterProvider router={router} />
-        </Auth0Provider>
+        </AuthProvider>
     );
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <style>{componentStyles}</style>
         <App />
     </React.StrictMode>
 ); 
