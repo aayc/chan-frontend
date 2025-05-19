@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { LedgerTransaction } from '../../lib/ledger/types';
 import { LedgerParser } from '../../lib/ledger/parser';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import Popover from '../shared/Popover';
 
 interface IncomeEntry {
     id: string; // Can be date + description hash or similar for uniqueness
@@ -25,12 +26,51 @@ const toTitleCase = (str: string): string => {
     return str.toLowerCase().replace(/\b(\w)/g, s => s.toUpperCase());
 };
 
+// Custom label renderer for the Pie chart
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = (props: any) => {
+    const { cx, cy, midAngle, outerRadius, percent, name } = props;
+
+    // Hide label for very small slices
+    if (percent < 0.02) {
+        return null;
+    }
+
+    // Calculate positions for line and text
+    const lineStartX = cx + (outerRadius + 3) * Math.cos(-midAngle * RADIAN); // Start line slightly outside the slice
+    const lineStartY = cy + (outerRadius + 3) * Math.sin(-midAngle * RADIAN);
+    const lineEndX = cx + (outerRadius + 18) * Math.cos(-midAngle * RADIAN);   // End line further out
+    const lineEndY = cy + (outerRadius + 18) * Math.sin(-midAngle * RADIAN);
+    const textX = cx + (outerRadius + 23) * Math.cos(-midAngle * RADIAN);    // Position text after the line end
+    const textY = cy + (outerRadius + 23) * Math.sin(-midAngle * RADIAN);
+
+    return (
+        <>
+            <path d={`M${lineStartX},${lineStartY}L${lineEndX},${lineEndY}`} stroke="#888" fill="none" strokeWidth={1} />
+            <text
+                x={textX}
+                y={textY}
+                fill="#333"
+                textAnchor={textX > cx ? 'start' : 'end'}
+                dominantBaseline="central"
+                fontSize="12px"
+            >
+                {`${name} (${(percent * 100).toFixed(0)}%)`}
+            </text>
+        </>
+    );
+};
+
 export default function Income() {
     const [allLedgerTransactions, setAllLedgerTransactions] = useState<LedgerTransaction[]>([]);
     const [incomeTableData, setIncomeTableData] = useState<IncomeEntry[]>([]);
     const [pieChartData, setPieChartData] = useState<PieChartDataPoint[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    // State for filters
+    const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState<boolean>(false);
+    const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
 
     useEffect(() => {
         async function fetchData() {
@@ -54,6 +94,41 @@ export default function Income() {
         fetchData();
     }, []);
 
+    const uniqueMonthsForFilter = useMemo(() => {
+        if (allLedgerTransactions.length === 0) return [];
+        const months = new Set<string>();
+        allLedgerTransactions.forEach(t => {
+            // Iterate through postings to find joint:income to ensure month is relevant to income
+            let hasIncomeInMonth = false;
+            for (const p of t.postings) {
+                if (p.account.startsWith('joint:income:')) {
+                    hasIncomeInMonth = true;
+                    break;
+                }
+            }
+            if (hasIncomeInMonth) {
+                const monthYear = `${t.date.getFullYear()}-${(t.date.getMonth() + 1).toString().padStart(2, '0')}`;
+                months.add(monthYear);
+            }
+        });
+        return Array.from(months).sort((a, b) => b.localeCompare(a)) // Sort newest first
+            .map(monthStr => ({
+                value: monthStr,
+                label: new Date(parseInt(monthStr.split('-')[0]), parseInt(monthStr.split('-')[1]) - 1).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+            }));
+    }, [allLedgerTransactions]);
+
+    const handleMonthToggle = (month: string) => {
+        setSelectedMonths(prev =>
+            prev.includes(month) ? prev.filter(m => m !== month) : [...prev, month]
+        );
+    };
+
+    const handleClearFilters = () => {
+        setSelectedMonths([]);
+        setIsFilterPopoverOpen(false);
+    };
+
     useEffect(() => {
         if (allLedgerTransactions.length === 0 && !error) {
             if (!loading && !error) {
@@ -64,25 +139,50 @@ export default function Income() {
 
         setLoading(true);
 
+        // Filter transactions by selected months first
+        const monthFilteredTransactions = selectedMonths.length === 0
+            ? allLedgerTransactions
+            : allLedgerTransactions.filter(transaction => {
+                const transactionMonthYear = `${transaction.date.getFullYear()}-${(transaction.date.getMonth() + 1).toString().padStart(2, '0')}`;
+                return selectedMonths.includes(transactionMonthYear);
+            });
+
         const processedIncomeEntries: IncomeEntry[] = [];
         const incomeCategories: Record<string, number> = {};
 
-        allLedgerTransactions.forEach((transaction, txIndex) => {
+        monthFilteredTransactions.forEach((transaction, txIndex) => {
             transaction.postings.forEach((posting, pIndex) => {
-                // Income is typically a credit (negative amount in ledger) to an income account
-                if (posting.account.startsWith('joint:income:') && posting.amount && posting.amount < 0) {
-                    const category = posting.account.split(':')[2] || 'Unknown'; // e.g., joint:income:salary -> salary
-                    const amount = Math.abs(posting.amount); // Display as positive
+                if (posting.account.startsWith('joint:income:')) {
+                    let incomeAmount: number | null = null;
 
-                    processedIncomeEntries.push({
-                        id: `${transaction.date.toISOString()}-${txIndex}-${pIndex}`,
-                        date: transaction.date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }),
-                        description: transaction.description || 'N/A',
-                        category: toTitleCase(category),
-                        amount: amount,
-                    });
+                    if (posting.amount && posting.amount < 0) {
+                        incomeAmount = Math.abs(posting.amount);
+                    } else if (posting.amount === null || posting.amount === 0) {
+                        // Calculate implicit amount if it's null or zero
+                        let sumOfOtherPostings = 0;
+                        transaction.postings.forEach(otherPosting => {
+                            if (otherPosting !== posting && otherPosting.amount !== null) {
+                                sumOfOtherPostings += otherPosting.amount;
+                            }
+                        });
+                        // The income posting balances the sum of others.
+                        // If others sum to X, income is -X. We need the absolute value.
+                        if (sumOfOtherPostings !== 0) { // ensure there are other amounts to balance against
+                            incomeAmount = Math.abs(sumOfOtherPostings);
+                        }
+                    }
 
-                    incomeCategories[category] = (incomeCategories[category] || 0) + amount;
+                    if (incomeAmount !== null && incomeAmount > 0) {
+                        const category = posting.account.split(':')[2] || 'Unknown';
+                        processedIncomeEntries.push({
+                            id: `${transaction.date.toISOString()}-${txIndex}-${pIndex}`,
+                            date: transaction.date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+                            description: transaction.description || 'N/A',
+                            category: toTitleCase(category),
+                            amount: incomeAmount,
+                        });
+                        incomeCategories[category] = (incomeCategories[category] || 0) + incomeAmount;
+                    }
                 }
             });
         });
@@ -91,15 +191,24 @@ export default function Income() {
         processedIncomeEntries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         setIncomeTableData(processedIncomeEntries);
 
-        const formattedPieData: PieChartDataPoint[] = Object.entries(incomeCategories)
+        const sortedCategories = Object.entries(incomeCategories)
             .map(([name, value]) => ({ name: toTitleCase(name), value }))
-            .sort((a, b) => b.value - a.value); // Sort by value descending
+            .sort((a, b) => b.value - a.value);
 
-        setPieChartData(formattedPieData);
+        let finalPieData: PieChartDataPoint[];
+        if (sortedCategories.length > 5) {
+            const top5 = sortedCategories.slice(0, 5);
+            const otherValue = sortedCategories.slice(5).reduce((acc, curr) => acc + curr.value, 0);
+            finalPieData = [...top5, { name: 'Other', value: otherValue }];
+        } else {
+            finalPieData = sortedCategories;
+        }
+
+        setPieChartData(finalPieData);
         setLoading(false);
         setError(null);
 
-    }, [allLedgerTransactions, error]);
+    }, [allLedgerTransactions, error, selectedMonths]);
 
     if (loading && incomeTableData.length === 0 && pieChartData.length === 0) {
         return <div className="p-6 text-center">Loading income data...</div>;
@@ -114,24 +223,24 @@ export default function Income() {
         <div className="bg-white p-6 rounded-xl shadow mb-8" style={{ height: '450px' }}>
             {pieChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                    <PieChart margin={{ top: 0, right: 40, left: 40, bottom: 20 }}> {/* Increased side margins */}
                         <Pie
                             data={pieChartData}
                             cx="50%"
                             cy="50%"
-                            labelLine={false}
-                            outerRadius={120}
+                            labelLine={false} // Disable default line, custom label will draw it
+                            label={renderCustomizedLabel}
+                            outerRadius={100}
                             fill="#8884d8"
                             dataKey="value"
                             nameKey="name"
-                            label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                         >
                             {pieChartData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>
                         <Tooltip formatter={(value: number) => [`$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, "Amount"]} />
-                        <Legend />
+                        <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }} /> {/* Decreased font size */}
                     </PieChart>
                 </ResponsiveContainer>
             ) : (
@@ -144,7 +253,52 @@ export default function Income() {
 
     return (
         <div className="space-y-8">
-            <h3 className="text-3xl font-bold text-gray-800">Income</h3>
+            <div className="flex justify-between items-center">
+                <h3 className="text-3xl font-bold text-gray-800">Income Breakdown</h3>
+                <Popover
+                    open={isFilterPopoverOpen}
+                    onOpenChange={setIsFilterPopoverOpen}
+                    trigger={
+                        <button
+                            className="px-4 py-2 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer text-sm transition-colors duration-150"
+                        >
+                            Filters
+                        </button>
+                    }
+                    align="end"
+                    sideOffset={10}
+                >
+                    <div className="w-72">
+                        <div className="mb-4">
+                            <h5 className="text-sm font-medium mb-2 text-gray-700">Filter by Month</h5>
+                            <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
+                                {uniqueMonthsForFilter.map(month => (
+                                    <label key={month.value} className="flex items-center space-x-2 cursor-pointer p-1.5 rounded hover:bg-gray-100">
+                                        <input
+                                            type="checkbox"
+                                            className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                            checked={selectedMonths.includes(month.value)}
+                                            onChange={() => handleMonthToggle(month.value)}
+                                        />
+                                        <span className="text-sm text-gray-600">{month.label}</span>
+                                    </label>
+                                ))}
+                                {uniqueMonthsForFilter.length === 0 && (
+                                    <p className="text-xs text-gray-400 p-1.5">No months with income data found.</p>
+                                )}
+                            </div>
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-gray-200">
+                            <button
+                                onClick={handleClearFilters}
+                                className="w-full px-3 py-2 text-sm font-medium text-black bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150"
+                            >
+                                Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </Popover>
+            </div>
 
             {renderPieChart()}
 
