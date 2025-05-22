@@ -9,6 +9,7 @@ interface Asset {
     accountName: string; // e.g., "Ally Savings", "Vanguard VTSAX"
     fullAccountPath: string; // e.g., "assets:savings:ally"
     balance: number;
+    lastUpdated: string; // Date of the last transaction affecting this asset
 }
 
 interface CategorizedAssets {
@@ -16,9 +17,9 @@ interface CategorizedAssets {
 }
 
 const ASSET_CATEGORIES_CONFIG: { [key: string]: { title: string; keywords: string[] } } = {
-    SAVINGS: { title: 'Savings', keywords: ['assets:bank:savings', 'assets:savings', 'assets:liquid', 'assets:cash'] },
-    INVESTMENTS: { title: 'Investments', keywords: ['assets:brokerage', 'assets:investments', 'assets:stocks', 'assets:crypto', 'assets:retirement'] },
-    BONDS: { title: 'Treasury Bonds', keywords: ['assets:bonds', 'assets:fixed:bonds', 'assets:treasury'] },
+    SAVINGS: { title: 'Bank & Cash Savings', keywords: ['assets:bank', 'assets:savings', 'assets:liquid', 'assets:cash'] },
+    INVESTMENTS: { title: 'Investment Accounts', keywords: ['assets:investments', 'assets:brokerage', 'assets:stocks', 'assets:crypto', 'assets:retirement'] },
+    BONDS: { title: 'Bonds', keywords: ['assets:bonds', 'assets:fixed:bonds', 'assets:treasury'] },
     POSSESSIONS: { title: 'Possessions', keywords: ['assets:realestate', 'assets:home', 'assets:car', 'assets:vehicle', 'assets:valuables'] },
 };
 
@@ -34,10 +35,70 @@ const formatAccountName = (accountPath: string): string => {
     return namePart.toLowerCase().replace(/\b(\w)/g, s => s.toUpperCase()).replace(/& (\w)/g, (match, p1) => `& ${p1.toUpperCase()}`);
 };
 
+// Helper function to find common prefix for display
+const getDisplayPrefixToRemove = (names: string[]): string => {
+    if (!names || names.length < 2) {
+        return "";
+    }
+
+    let commonChars = names[0];
+    for (let i = 1; i < names.length; i++) {
+        while (names[i].indexOf(commonChars) !== 0) {
+            commonChars = commonChars.substring(0, commonChars.length - 1);
+            if (commonChars === "") return "";
+        }
+    }
+
+    if (commonChars === "" || commonChars.trim().length < 3) return ""; // Too short or only whitespace
+
+    let isFullWordPrefixForAll = true;
+    for (const name of names) {
+        if (name.length > commonChars.length) {
+            if (name.charAt(commonChars.length) !== ' ') {
+                isFullWordPrefixForAll = false;
+                break;
+            }
+        }
+    }
+
+    if (isFullWordPrefixForAll) {
+        if (commonChars.charAt(commonChars.length - 1) !== ' ') {
+            let canAddSpace = true;
+            for (const name of names) {
+                if (name !== commonChars && !name.startsWith(commonChars + " ")) {
+                    canAddSpace = false;
+                    break;
+                }
+            }
+            if (canAddSpace && names.some(name => name.startsWith(commonChars + " "))) {
+                return commonChars + " ";
+            } else if (names.every(name => name === commonChars)) {
+                const lastSpace = commonChars.lastIndexOf(' ');
+                if (lastSpace > 0) {
+                    const p = commonChars.substring(0, lastSpace + 1);
+                    if (p.trim().length >= 3) return p;
+                }
+                return "";
+            }
+            if (commonChars.charAt(commonChars.length - 1) === ' ' && commonChars.trim().length >= 3) return commonChars;
+            return "";
+        } else {
+            if (commonChars.trim().length >= 3) return commonChars;
+            return "";
+        }
+    } else {
+        const lastSpace = commonChars.lastIndexOf(' ');
+        if (lastSpace >= 0) { // Allow prefix like "US " where lastSpace is 2 (index)
+            const s = commonChars.substring(0, lastSpace + 1);
+            if (s.trim().length >= 2) return s; // Adjusted for prefixes like "US "
+        }
+    }
+    return "";
+};
 
 // Placeholder AssetCard component
 const AssetCard: React.FC<{ asset: Asset }> = ({ asset }) => (
-    <div className="bg-white p-4 rounded-lg shadow-md min-w-[200px] max-w-[250px] flex-shrink-0 mr-4 h-32 flex flex-col justify-between">
+    <div className="bg-white p-4 rounded-lg shadow-md h-36 flex flex-col justify-between w-full">
         <div>
             <h4 className="text-sm font-semibold text-gray-700 truncate" title={asset.accountName}>{asset.accountName}</h4>
         </div>
@@ -45,6 +106,11 @@ const AssetCard: React.FC<{ asset: Asset }> = ({ asset }) => (
             <p className="text-xl font-bold text-gray-900">
                 ${asset.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
+            {asset.lastUpdated && asset.lastUpdated !== 'N/A' && (
+                <p className="text-xs text-gray-500 mt-1">
+                    Last updated: {new Date(asset.lastUpdated).toLocaleDateString()}
+                </p>
+            )}
         </div>
     </div>
 );
@@ -57,12 +123,10 @@ const AssetCarousel: React.FC<{ title: string; assets: Asset[] }> = ({ title, as
     return (
         <div className="mb-8">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">{title}</h3>
-            <div className="flex overflow-x-auto pb-4 -mb-4"> {/* pb-4 and -mb-4 for scrollbar visibility without increasing div size */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {assets.map(asset => (
                     <AssetCard key={asset.fullAccountPath} asset={asset} />
                 ))}
-                {/* Add a spacer at the end if needed for better scroll experience */}
-                <div className="flex-shrink-0 w-1"></div>
             </div>
         </div>
     );
@@ -82,6 +146,10 @@ const SummaryCard: React.FC<{ title: string; amount: number; subtext?: string; }
 export default function Assets() {
     const [categorizedAssets, setCategorizedAssets] = useState<CategorizedAssets>({});
     const [totalAssets, setTotalAssets] = useState<number>(0);
+    const [yearToDateChange, setYearToDateChange] = useState<number | null>(null);
+    const [projectedEoyAssets, setProjectedEoyAssets] = useState<number | null>(null);
+    const [displayCurrentYear, setDisplayCurrentYear] = useState<number | null>(null);
+    const [baselineDateForChanges, setBaselineDateForChanges] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -106,18 +174,120 @@ export default function Assets() {
         }
 
         const processTransactionsForAssets = (transactions: LedgerTransaction[]) => {
+            if (transactions.length === 0) {
+                setTotalAssets(0);
+                setCategorizedAssets({});
+                setYearToDateChange(null);
+                setProjectedEoyAssets(null);
+                setDisplayCurrentYear(new Date().getFullYear());
+                setBaselineDateForChanges(null);
+                return;
+            }
+
+            // Determine latest transaction date and current calendar year
+            let latestTransactionDateOverall = new Date(transactions[0].date);
+            transactions.forEach(t => {
+                const d = new Date(t.date);
+                if (d > latestTransactionDateOverall) latestTransactionDateOverall = d;
+            });
+            const currentCalendarYear = latestTransactionDateOverall.getFullYear();
+            setDisplayCurrentYear(currentCalendarYear);
+
+            // Find "Opening Balances" transaction and calculate balances at that point
+            let openingBalancesTransactionDate: Date | null = null;
+            const balancesAtOpening: Record<string, number> = {};
+            let valueAtBaseline = 0;
+            let openingBalancesFound = false;
+
+            // Sort transactions by date to ensure correct accumulation for opening balances
+            const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+            for (const t of sortedTransactions) {
+                const transactionDate = new Date(t.date);
+                t.postings.forEach(p => {
+                    if ((p.account.includes(':assets:') || p.account.startsWith('assets:')) && p.amount !== null) {
+                        balancesAtOpening[p.account] = (balancesAtOpening[p.account] || 0) + p.amount;
+                    }
+                });
+
+                if (t.description.toLowerCase().includes('opening balances')) {
+                    openingBalancesTransactionDate = transactionDate;
+                    // Create a snapshot of positive asset balances at this point
+                    valueAtBaseline = Object.values(balancesAtOpening)
+                        .filter(bal => bal > 0)
+                        .reduce((sum, bal) => sum + bal, 0);
+                    openingBalancesFound = true;
+                    // Important: Stop accumulating further into balancesAtOpening for the baseline after this point.
+                    // The valueAtBaseline is now fixed.
+                    // However, we continue iterating all transactions for current balances below.
+                }
+            }
+
+            if (openingBalancesFound && openingBalancesTransactionDate) {
+                setBaselineDateForChanges(openingBalancesTransactionDate.toISOString().split('T')[0]);
+            } else {
+                // Fallback if no "Opening Balances" transaction is found: use start of current year like before
+                // This part can be refined or removed if "Opening Balances" is guaranteed
+                console.warn("'Opening Balances' transaction not found. Calculations will use start of year as baseline.");
+                openingBalancesTransactionDate = new Date(currentCalendarYear, 0, 0); // Effectively Jan 0, to capture all of Jan 1
+                sortedTransactions.forEach(t => {
+                    const tDate = new Date(t.date);
+                    if (tDate < new Date(currentCalendarYear, 0, 1)) {
+                        t.postings.forEach(p => {
+                            if ((p.account.includes(':assets:') || p.account.startsWith('assets:')) && p.amount !== null) {
+                                balancesAtOpening[p.account] = (balancesAtOpening[p.account] || 0) + p.amount; // Re-accumulate for this fallback
+                            }
+                        });
+                    }
+                });
+                valueAtBaseline = Object.values(balancesAtOpening)
+                    .filter(bal => bal > 0)
+                    .reduce((sum, bal) => sum + bal, 0);
+                setBaselineDateForChanges(`${currentCalendarYear}-01-01`);
+            }
+
+            // --- Existing logic for current balances and categorization (uses all transactions) --- 
             const accountBalances: Record<string, number> = {};
+            const accountLastTransactionDate: Record<string, string> = {};
+
             transactions.forEach(transaction => {
                 transaction.postings.forEach(posting => {
                     if (posting.amount !== null) {
                         accountBalances[posting.account] = (accountBalances[posting.account] || 0) + posting.amount;
+
+                        // Update last transaction date
+                        // Ensure we only consider asset accounts for "last updated" date relevant to asset cards
+                        if (posting.account.includes(':assets:') || posting.account.startsWith('assets:')) {
+                            const transactionDate = new Date(transaction.date);
+                            if (!accountLastTransactionDate[posting.account] || transactionDate > new Date(accountLastTransactionDate[posting.account])) {
+                                accountLastTransactionDate[posting.account] = transactionDate.toISOString(); // Store as ISO string
+                            }
+                        }
                     }
                 });
             });
 
+            const getCategorizablePath = (fullPath: string): string => {
+                const parts = fullPath.split(':');
+                const assetsKeywordIndex = parts.indexOf('assets');
+                if (assetsKeywordIndex !== -1) {
+                    return parts.slice(assetsKeywordIndex).join(':');
+                }
+                // Fallback for paths that might not fit the expected "owner:assets:..." structure
+                // but are still considered assets. If 'assets:' is at the start, it's already categorizable.
+                if (fullPath.startsWith('assets:')) {
+                    return fullPath;
+                }
+                // This case implies an asset path that doesn't include "assets" as a segment,
+                // which might be an edge case or an issue with how assets are defined/filtered.
+                // console.warn(`Asset path does not conform to expected pattern for categorization: ${fullPath}`);
+                return fullPath;
+            };
+
             const allAssets: Asset[] = [];
             for (const accountPath in accountBalances) {
-                if (accountPath.startsWith('assets:')) {
+                // Include paths like 'joint:assets:...' or 'assets:...'
+                if (accountPath.includes(':assets:') || accountPath.startsWith('assets:')) {
                     // Ensure we only consider accounts with a final positive balance for typical assets
                     // or any balance if specific asset types can be negative (e.g. margin accounts, though not typical for this view)
                     // For simplicity, let's assume asset values are generally non-negative or their ledger representation is a positive final balance.
@@ -128,6 +298,7 @@ export default function Assets() {
                             fullAccountPath: accountPath,
                             accountName: formatAccountName(accountPath),
                             balance: accountBalances[accountPath],
+                            lastUpdated: accountLastTransactionDate[accountPath] || 'N/A', // Add last updated date
                         });
                     }
                 }
@@ -142,7 +313,8 @@ export default function Assets() {
                 let assigned = false;
                 for (const catKey in ASSET_CATEGORIES_CONFIG) {
                     const catConfig = ASSET_CATEGORIES_CONFIG[catKey];
-                    if (catConfig.keywords.some(keyword => asset.fullAccountPath.startsWith(keyword))) {
+                    const categorizablePath = getCategorizablePath(asset.fullAccountPath);
+                    if (catConfig.keywords.some(keyword => categorizablePath.startsWith(keyword))) {
                         newCategorizedAssets[catConfig.title].push(asset);
                         assigned = true;
                         break;
@@ -158,8 +330,63 @@ export default function Assets() {
                 newCategorizedAssets[category].sort((a, b) => b.balance - a.balance);
             }
 
+            // Simplify account names by removing common prefixes within categories
+            for (const categoryTitle in newCategorizedAssets) {
+                const assetsInThisCategory = newCategorizedAssets[categoryTitle];
+                if (assetsInThisCategory.length > 1) {
+                    const accountNames = assetsInThisCategory.map(asset => asset.accountName);
+                    const prefixToRemove = getDisplayPrefixToRemove(accountNames);
+
+                    if (prefixToRemove) {
+                        assetsInThisCategory.forEach(asset => {
+                            if (asset.accountName.startsWith(prefixToRemove)) {
+                                const newName = asset.accountName.substring(prefixToRemove.length).trim();
+                                // Keep original if new name is empty and original is just the prefix (slightly adjusted)
+                                if (newName === "" && asset.accountName.trim() === prefixToRemove.trim()) {
+                                    // This case is tricky: if name was "Vanguard" and prefix "Vanguard ", newName is "".
+                                    // If name was "Vanguard" and prefix was "Vanguard", it would also be "".
+                                    // Let's ensure we don't make it empty if it was a single word that matched the prefix base.
+                                    // If prefixToRemove is "Vanguard " and name is "Vanguard", it won't start with it.
+                                    // If name is "Vanguard", and prefix derived becomes "Vanguard ", it shouldn't be removed.
+                                    // The current startsWith check handles this. If newName is empty, it means original name was prefix.
+                                    asset.accountName = newName; // Allow it to be empty, or use original if really needed
+                                } else if (newName !== "") {
+                                    asset.accountName = newName;
+                                }
+                                // If newName is empty and it wasn't just the prefix, it implies an issue or an asset named like the prefix.
+                                // For now, if it becomes empty, it means the asset name was exactly the prefix.
+                            }
+                        });
+                    }
+                }
+            }
+
             setCategorizedAssets(newCategorizedAssets);
-            setTotalAssets(allAssets.reduce((sum, asset) => sum + asset.balance, 0));
+            const currentTotalAssets = allAssets.reduce((sum, asset) => sum + asset.balance, 0);
+            setTotalAssets(currentTotalAssets);
+
+            // --- New calculations for Change and Projection based on Baseline ---
+            setYearToDateChange(currentTotalAssets - valueAtBaseline);
+
+            if (openingBalancesTransactionDate && latestTransactionDateOverall > openingBalancesTransactionDate) {
+                const daysElapsedSinceBaseline = (latestTransactionDateOverall.getTime() - openingBalancesTransactionDate.getTime()) / (1000 * 60 * 60 * 24) + 1;
+
+                if (daysElapsedSinceBaseline > 0) {
+                    const changeSinceBaselineForProjection = currentTotalAssets - valueAtBaseline;
+                    const avgDailyChange = changeSinceBaselineForProjection / daysElapsedSinceBaseline;
+
+                    const lastDayOfCalendarYear = new Date(currentCalendarYear, 11, 31);
+                    // Ensure latestTransactionDateOverall is not past lastDayOfCalendarYear for remaining days calculation
+                    const effectiveLatestDateForRemaining = latestTransactionDateOverall > lastDayOfCalendarYear ? lastDayOfCalendarYear : latestTransactionDateOverall;
+                    const daysRemainingInCalendarYear = Math.max(0, (lastDayOfCalendarYear.getTime() - effectiveLatestDateForRemaining.getTime()) / (1000 * 60 * 60 * 24));
+
+                    setProjectedEoyAssets(currentTotalAssets + (avgDailyChange * daysRemainingInCalendarYear));
+                } else {
+                    setProjectedEoyAssets(currentTotalAssets); // Not enough data since baseline
+                }
+            } else {
+                setProjectedEoyAssets(currentTotalAssets); // Baseline is too recent or not found for meaningful projection
+            }
         };
 
         loadAssetData();
@@ -178,6 +405,12 @@ export default function Assets() {
             {/* Overview Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <SummaryCard title="Total Assets" amount={totalAssets} subtext="Current estimated value" />
+                {yearToDateChange !== null && baselineDateForChanges && (
+                    <SummaryCard title="Value Change" amount={yearToDateChange} subtext={`Since ${baselineDateForChanges}`} />
+                )}
+                {projectedEoyAssets !== null && displayCurrentYear && (
+                    <SummaryCard title="Projected EOY Assets" amount={projectedEoyAssets} subtext={`Est. by ${displayCurrentYear}-12-31`} />
+                )}
                 {/* Add more summary cards if needed */}
             </div>
 
