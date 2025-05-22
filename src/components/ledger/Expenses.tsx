@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { BudgetPeriod, LedgerTransaction } from '../../lib/ledger/types';
 import { LedgerParser } from '../../lib/ledger/parser';
+import { LocalFileStorageService } from '../../lib/ledger/storage';
 import { SelectMenu, SelectOption } from '../shared/Select';
 import Popover from '../shared/Popover';
 import Transactions from './Transactions';
@@ -85,9 +86,9 @@ export default function Expenses() {
         async function initialLoad() {
             setLoading(true);
             try {
-                const response = await fetch('/src/assets/sample.ledger');
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const ledgerContent = await response.text();
+                const storageService = new LocalFileStorageService('/src/assets/sample.ledger');
+                const ledgerContent = await storageService.fetchLedgerContent();
+
                 const parser = new LedgerParser();
                 setAllTransactions(parser.parse(ledgerContent));
                 setAllBudgets(parser.parseBudgets(ledgerContent));

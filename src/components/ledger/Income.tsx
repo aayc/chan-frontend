@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { LedgerTransaction } from '../../lib/ledger/types';
 import { LedgerParser } from '../../lib/ledger/parser';
+import { LocalFileStorageService } from '../../lib/ledger/storage';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Popover from '../shared/Popover';
 
@@ -76,11 +77,8 @@ export default function Income() {
         async function fetchData() {
             setLoading(true);
             try {
-                const response = await fetch('/src/assets/sample.ledger');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const ledgerContent = await response.text();
+                const storageService = new LocalFileStorageService('/src/assets/sample.ledger');
+                const ledgerContent = await storageService.fetchLedgerContent();
                 const parser = new LedgerParser();
                 const parsedTransactions = parser.parse(ledgerContent);
                 setAllLedgerTransactions(parsedTransactions);

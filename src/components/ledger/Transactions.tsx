@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { LedgerTransaction } from '../../lib/ledger/types';
 import { LedgerParser } from '../../lib/ledger/parser';
+import { LocalFileStorageService } from '../../lib/ledger/storage';
 import { SelectMenu, SelectOption } from '../shared/Select';
 import Popover from '../shared/Popover';
 import Tag from '../shared/Tag';
@@ -87,11 +88,8 @@ const Transactions: React.FC<TransactionsProps> = ({ initialMonthFilter, initial
     useEffect(() => {
         async function fetchData() {
             try {
-                const response = await fetch('/src/assets/sample.ledger');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const ledgerContent = await response.text();
+                const storageService = new LocalFileStorageService('/src/assets/sample.ledger');
+                const ledgerContent = await storageService.fetchLedgerContent();
                 const parser = new LedgerParser();
                 const parsedTransactions = parser.parse(ledgerContent);
                 setTransactions(parsedTransactions);
