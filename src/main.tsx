@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AuthProvider } from './AuthContext';
 
 import Root from './routes/Root';
@@ -14,6 +16,23 @@ import ProtectedRoute from './routes/ProtectedRoute';
 
 import './index.css';
 import { componentStyles } from './components/shared/styles';
+
+// Create a client
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 5 * 60 * 1000, // 5 minutes
+            gcTime: 10 * 60 * 1000, // 10 minutes
+            retry: (failureCount, error) => {
+                // Don't retry on auth errors
+                if (error.message.includes('not authenticated')) {
+                    return false;
+                }
+                return failureCount < 3;
+            },
+        },
+    },
+});
 
 const router = createBrowserRouter([
     {
@@ -49,9 +68,12 @@ const router = createBrowserRouter([
 
 const App: React.FC = () => {
     return (
-        <AuthProvider>
-            <RouterProvider router={router} />
-        </AuthProvider>
+        <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+                <RouterProvider router={router} />
+                <ReactQueryDevtools initialIsOpen={false} />
+            </AuthProvider>
+        </QueryClientProvider>
     );
 };
 

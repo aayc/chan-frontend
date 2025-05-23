@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { BudgetPeriod, LedgerTransaction } from '../../lib/ledger/types';
-import { LedgerParser } from '../../lib/ledger/parser';
-import { LocalFileStorageService } from '../../lib/ledger/storage';
+import { BudgetPeriod, LedgerTransaction, Budget } from '../../lib/ledger/types';
 import { SelectMenu, SelectOption } from '../shared/Select';
 import Popover from '../shared/Popover';
 import Transactions from './Transactions';
+import { useLedgerData } from '../../hooks/useLedgerData';
+import ExpensesSkeleton from '../skeletons/ExpensesSkeleton';
 
 interface ExpenseGroup {
     name: string;
@@ -47,9 +47,12 @@ const toTitleCase = (str: string): string => {
 };
 
 export default function Expenses() {
+    const { data, isLoading, error } = useLedgerData();
+    const allTransactions = data?.transactions ?? [];
+    const allBudgets = data?.budgets ?? [];
+
     const [monthlyBudgetsDisplay, setMonthlyBudgetsDisplay] = useState<ExpenseGroup[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
 
     const [totalBudget, setTotalBudget] = useState(0);
     const [totalSpent, setTotalSpent] = useState(0);
@@ -61,12 +64,12 @@ export default function Expenses() {
     const [topSpendCategories, setTopSpendCategories] = useState<ExpenseGroup[]>([]);
     const [trendCategories, setTrendCategories] = useState<TrendCategory[]>([]);
     const [activePopoverCategory, setActivePopoverCategory] = useState<string | null>(null);
-    const [activeYearlyPopoverCategory, setActiveYearlyPopoverCategory] = useState<string | null>(null); // New state for yearly popovers
+    const [activeYearlyPopoverCategory, setActiveYearlyPopoverCategory] = useState<string | null>(null);
 
-    const initialCurrentMonth = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
-    const [selectedMonth, setSelectedMonth] = useState<string>(initialCurrentMonth);
-    const [allTransactions, setAllTransactions] = useState<LedgerTransaction[]>([]);
-    const [allBudgets, setAllBudgets] = useState<any[]>([]); // Using any for now, replace with Budget[] from types
+    const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+        const today = new Date();
+        return `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+    });
 
     const uniqueMonthsForDropdown = useMemo(() => {
         if (allTransactions.length === 0) return [];
@@ -83,30 +86,9 @@ export default function Expenses() {
     }, [allTransactions]);
 
     useEffect(() => {
-        async function initialLoad() {
-            setLoading(true);
-            try {
-                const storageService = new LocalFileStorageService('/src/assets/sample.ledger');
-                const ledgerContent = await storageService.fetchLedgerContent();
-
-                const parser = new LedgerParser();
-                setAllTransactions(parser.parse(ledgerContent));
-                setAllBudgets(parser.parseBudgets(ledgerContent));
-                setError(null);
-            } catch (err) {
-                console.error('Error loading initial data:', err);
-                setError(err instanceof Error ? err.message : 'Failed to load initial data');
-            } finally {
-                // Initial loading false will be set by the processing effect if allTransactions is populated
-            }
-        }
-        initialLoad();
-    }, []);
-
-    useEffect(() => {
         if (allTransactions.length === 0 || allBudgets.length === 0) {
-            // Don't process until initial data is loaded
-            if (!loading && allTransactions.length > 0 && allBudgets.length > 0) setLoading(false);
+            // Don't process until data is loaded
+            if (!isLoading && allTransactions.length > 0 && allBudgets.length > 0) setLoading(false);
             return;
         }
         setLoading(true);
@@ -257,17 +239,16 @@ export default function Expenses() {
         }
         setYearlyBudgetsDisplay(dynamicYearlyDisplay.sort((a, b) => b.budget - a.budget));
 
-        setError(null);
         setLoading(false);
 
     }, [selectedMonth, allTransactions, allBudgets]);
 
-    if (loading && monthlyBudgetsDisplay.length === 0) {
-        return <div className="p-6">Loading expenses data...</div>;
+    if (isLoading && monthlyBudgetsDisplay.length === 0) {
+        return <ExpensesSkeleton />;
     }
 
     if (error) {
-        return <div className="p-6 text-red-600">Error: {error}</div>;
+        return <div className="p-6 text-red-600">Error: {error.message}</div>;
     }
 
     const remainingBudget = totalBudget - totalSpent;

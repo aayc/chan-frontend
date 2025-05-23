@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { LedgerTransaction } from '../../lib/ledger/types';
-import { LedgerParser } from '../../lib/ledger/parser';
-import { LocalFileStorageService } from '../../lib/ledger/storage';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Popover from '../shared/Popover';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { useLedgerTransactions } from '../../hooks/useLedgerData';
+import IncomeSkeleton from '../skeletons/IncomeSkeleton';
 
 interface IncomeEntry {
     id: string; // Can be date + description hash or similar for uniqueness
@@ -63,34 +63,15 @@ const renderCustomizedLabel = (props: any) => {
 };
 
 export default function Income() {
-    const [allLedgerTransactions, setAllLedgerTransactions] = useState<LedgerTransaction[]>([]);
+    const { transactions: allLedgerTransactions, isLoading, error } = useLedgerTransactions();
+
     const [incomeTableData, setIncomeTableData] = useState<IncomeEntry[]>([]);
     const [pieChartData, setPieChartData] = useState<PieChartDataPoint[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
 
     // State for filters
     const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState<boolean>(false);
     const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
-
-    useEffect(() => {
-        async function fetchData() {
-            setLoading(true);
-            try {
-                const storageService = new LocalFileStorageService('/src/assets/sample.ledger');
-                const ledgerContent = await storageService.fetchLedgerContent();
-                const parser = new LedgerParser();
-                const parsedTransactions = parser.parse(ledgerContent);
-                setAllLedgerTransactions(parsedTransactions);
-                setError(null);
-            } catch (err) {
-                console.error('Error loading ledger data:', err);
-                setError(err instanceof Error ? err.message : 'Failed to load ledger data');
-                setLoading(false);
-            }
-        }
-        fetchData();
-    }, []);
 
     const uniqueMonthsForFilter = useMemo(() => {
         if (allLedgerTransactions.length === 0) return [];
@@ -129,8 +110,8 @@ export default function Income() {
 
     useEffect(() => {
         if (allLedgerTransactions.length === 0 && !error) {
-            if (!loading && !error) {
-            } else if (loading && allLedgerTransactions.length === 0 && !error) {
+            if (!isLoading && !error) {
+            } else if (isLoading && allLedgerTransactions.length === 0 && !error) {
                 return;
             }
         }
@@ -204,16 +185,15 @@ export default function Income() {
 
         setPieChartData(finalPieData);
         setLoading(false);
-        setError(null);
 
     }, [allLedgerTransactions, error, selectedMonths]);
 
-    if (loading && incomeTableData.length === 0 && pieChartData.length === 0) {
-        return <div className="p-6 text-center">Loading income data...</div>;
+    if ((isLoading || loading) && incomeTableData.length === 0 && pieChartData.length === 0) {
+        return <IncomeSkeleton />;
     }
 
     if (error) {
-        return <div className="p-6 text-red-600 text-center">Error: {error}</div>;
+        return <div className="p-6 text-red-600 text-center">Error: {error.message}</div>;
     }
 
     // Placeholder for Pie Chart rendering

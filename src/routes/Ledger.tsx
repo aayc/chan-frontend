@@ -14,7 +14,6 @@ import {
     HiOutlineArrowLeftOnRectangle
 } from 'react-icons/hi2';
 import { useAuth } from '../AuthContext';
-// Import other components like Assets, Investments when they are ready
 
 const SidebarItem: React.FC<{ title: string; isActive?: boolean; onClick: () => void; icon?: React.ReactNode, className?: string }> =
     ({ title, isActive, onClick, icon, className }) => (

@@ -1,27 +1,24 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { LedgerTransaction } from '../../lib/ledger/types';
-import { LedgerParser } from '../../lib/ledger/parser';
-import { LocalFileStorageService } from '../../lib/ledger/storage';
 import { SelectMenu, SelectOption } from '../shared/Select';
 import Popover from '../shared/Popover';
 import Tag from '../shared/Tag';
+import { useLedgerTransactions } from '../../hooks/useLedgerData';
+import TransactionsSkeleton from '../skeletons/TransactionsSkeleton';
 
 interface TransactionsProps {
     initialMonthFilter?: string;
     initialAccountFilter?: string;
-    // We might also want to pass transactions and skip fetching if this component is used in multiple places
-    // transactionsData?: LedgerTransaction[]; 
 }
 
 const Transactions: React.FC<TransactionsProps> = ({ initialMonthFilter, initialAccountFilter }) => {
-    const [transactions, setTransactions] = useState<LedgerTransaction[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const { transactions, isLoading, error } = useLedgerTransactions();
+
     const [sortOption, setSortOption] = useState<string>('date-desc');
-    const [visibleCount, setVisibleCount] = useState<number>(100); // Pagination state
-    const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState<boolean>(false); // Popover state
-    const [selectedMonths, setSelectedMonths] = useState<string[]>(initialMonthFilter ? [initialMonthFilter] : []); // Filter state
-    const [selectedAccounts, setSelectedAccounts] = useState<string[]>(initialAccountFilter ? [initialAccountFilter] : []); // Filter state
+    const [visibleCount, setVisibleCount] = useState<number>(100);
+    const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState<boolean>(false);
+    const [selectedMonths, setSelectedMonths] = useState<string[]>(initialMonthFilter ? [initialMonthFilter] : []);
+    const [selectedAccounts, setSelectedAccounts] = useState<string[]>(initialAccountFilter ? [initialAccountFilter] : []);
 
     const formatDate = (date: Date): string => {
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -75,8 +72,6 @@ const Transactions: React.FC<TransactionsProps> = ({ initialMonthFilter, initial
 
     useEffect(() => {
         // If initial filters are set, apply them.
-        // This effect runs once on mount if the props are provided.
-        // It assumes that if these props are passed, the component shouldn't open its own filter popover initially.
         if (initialMonthFilter) {
             setSelectedMonths([initialMonthFilter]);
         }
@@ -85,30 +80,12 @@ const Transactions: React.FC<TransactionsProps> = ({ initialMonthFilter, initial
         }
     }, [initialMonthFilter, initialAccountFilter]);
 
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const storageService = new LocalFileStorageService('/src/assets/sample.ledger');
-                const ledgerContent = await storageService.fetchLedgerContent();
-                const parser = new LedgerParser();
-                const parsedTransactions = parser.parse(ledgerContent);
-                setTransactions(parsedTransactions);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to load transactions');
-                console.error("Failed to load or parse ledger data:", err);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchData();
-    }, []);
-
-    if (loading) {
-        return <p className="text-center p-4">Loading transactions...</p>;
+    if (isLoading) {
+        return <TransactionsSkeleton />;
     }
 
     if (error) {
-        return <p className="text-center p-4 text-red-600">Error loading transactions: {error}</p>;
+        return <p className="text-center p-4 text-red-600">Error loading transactions: {error.message}</p>;
     }
 
     if (!transactions || transactions.length === 0) {
