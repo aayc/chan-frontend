@@ -1,15 +1,10 @@
-import React, { useState } from 'react';
-import Expenses from '../components/ledger/Expenses';
-import Transactions from '../components/ledger/Transactions';
-import Income from '../components/ledger/Income';
-import Assets from '../components/ledger/Assets';
+import React from 'react';
+import { useLocation, useNavigate, Outlet } from 'react-router';
 import {
     HiOutlineCurrencyDollar,
     HiOutlineArrowsRightLeft,
     HiOutlineBuildingOffice2,
-    HiOutlineChartPie,
     HiOutlineChartBarSquare,
-    HiOutlineCreditCard,
     HiOutlineBanknotes,
     HiOutlineArrowLeftOnRectangle
 } from 'react-icons/hi2';
@@ -28,8 +23,21 @@ const SidebarItem: React.FC<{ title: string; isActive?: boolean; onClick: () => 
     );
 
 export default function LedgerRouteContent() {
-    const [activeView, setActiveView] = useState<'expenses' | 'transactions' | 'assets' | 'income'>('expenses');
+    const location = useLocation();
+    const navigate = useNavigate();
     const { signOut, currentUser } = useAuth();
+
+    // Determine active view based on current path
+    const getActiveView = () => {
+        const path = location.pathname;
+        if (path.includes('/expenses')) return 'expenses';
+        if (path.includes('/transactions')) return 'transactions';
+        if (path.includes('/assets')) return 'assets';
+        if (path.includes('/income')) return 'income';
+        return null; // No specific view, show the outlet default
+    };
+
+    const activeView = getActiveView();
 
     const handleSignOut = async () => {
         try {
@@ -41,19 +49,8 @@ export default function LedgerRouteContent() {
         }
     };
 
-    const renderView = () => {
-        switch (activeView) {
-            case 'expenses':
-                return <Expenses />;
-            case 'transactions':
-                return <Transactions />;
-            case 'assets':
-                return <Assets />;
-            case 'income':
-                return <Income />;
-            default:
-                return <Expenses />;
-        }
+    const handleNavigation = (view: string) => {
+        navigate(`/ledger/${view}`);
     };
 
     return (
@@ -70,25 +67,25 @@ export default function LedgerRouteContent() {
                             <SidebarItem
                                 title="Expenses"
                                 isActive={activeView === 'expenses'}
-                                onClick={() => setActiveView('expenses')}
+                                onClick={() => handleNavigation('expenses')}
                                 icon={<HiOutlineCurrencyDollar />}
                             />
                             <SidebarItem
                                 title="Transactions"
                                 isActive={activeView === 'transactions'}
-                                onClick={() => setActiveView('transactions')}
+                                onClick={() => handleNavigation('transactions')}
                                 icon={<HiOutlineArrowsRightLeft />}
                             />
                             <SidebarItem
                                 title="Assets"
                                 isActive={activeView === 'assets'}
-                                onClick={() => setActiveView('assets')}
+                                onClick={() => handleNavigation('assets')}
                                 icon={<HiOutlineBuildingOffice2 />}
                             />
                             <SidebarItem
                                 title="Income"
                                 isActive={activeView === 'income'}
-                                onClick={() => setActiveView('income')}
+                                onClick={() => handleNavigation('income')}
                                 icon={<HiOutlineBanknotes />}
                             />
                         </ul>
@@ -111,7 +108,7 @@ export default function LedgerRouteContent() {
             <div className="flex-1 flex justify-center items-start overflow-y-auto h-screen">
                 {/* Actual Main Content Area */}
                 <main className="max-w-5xl w-full p-8">
-                    {renderView()}
+                    <Outlet />
                 </main>
             </div>
         </div>

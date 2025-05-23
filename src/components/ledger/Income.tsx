@@ -1,7 +1,5 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { LedgerTransaction } from '../../lib/ledger/types';
+import { useEffect, useState, useMemo } from 'react';
 import Popover from '../shared/Popover';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useLedgerTransactions } from '../../hooks/useLedgerData';
 import IncomeSkeleton from '../skeletons/IncomeSkeleton';
 
@@ -13,13 +11,10 @@ interface IncomeEntry {
     amount: number;
 }
 
-interface PieChartDataPoint {
+interface IncomeCategory {
     name: string;
     value: number;
-    // color will be assigned dynamically or via a predefined map
 }
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF84E7', '#82ca9d', '#ffc658'];
 
 // Helper function for Title Case (can be moved to a shared utils file)
 const toTitleCase = (str: string): string => {
@@ -66,7 +61,7 @@ export default function Income() {
     const { transactions: allLedgerTransactions, isLoading, error } = useLedgerTransactions();
 
     const [incomeTableData, setIncomeTableData] = useState<IncomeEntry[]>([]);
-    const [pieChartData, setPieChartData] = useState<PieChartDataPoint[]>([]);
+    const [incomeCategoryData, setIncomeCategoryData] = useState<IncomeCategory[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
     // State for filters
@@ -174,7 +169,7 @@ export default function Income() {
             .map(([name, value]) => ({ name: toTitleCase(name), value }))
             .sort((a, b) => b.value - a.value);
 
-        let finalPieData: PieChartDataPoint[];
+        let finalPieData: IncomeCategory[];
         if (sortedCategories.length > 5) {
             const top5 = sortedCategories.slice(0, 5);
             const otherValue = sortedCategories.slice(5).reduce((acc, curr) => acc + curr.value, 0);
@@ -183,12 +178,12 @@ export default function Income() {
             finalPieData = sortedCategories;
         }
 
-        setPieChartData(finalPieData);
+        setIncomeCategoryData(finalPieData);
         setLoading(false);
 
     }, [allLedgerTransactions, error, selectedMonths]);
 
-    if ((isLoading || loading) && incomeTableData.length === 0 && pieChartData.length === 0) {
+    if ((isLoading || loading) && incomeTableData.length === 0 && incomeCategoryData.length === 0) {
         return <IncomeSkeleton />;
     }
 
@@ -198,33 +193,32 @@ export default function Income() {
 
     // Placeholder for Pie Chart rendering
     const renderPieChart = () => (
-        <div className="bg-white p-6 rounded-xl shadow mb-8" style={{ height: '450px' }}>
-            {pieChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart margin={{ top: 0, right: 40, left: 40, bottom: 20 }}> {/* Increased side margins */}
-                        <Pie
-                            data={pieChartData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false} // Disable default line, custom label will draw it
-                            label={renderCustomizedLabel}
-                            outerRadius={100}
-                            fill="#8884d8"
-                            dataKey="value"
-                            nameKey="name"
-                            animationDuration={500}
-                        >
-                            {pieChartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+        <div className="bg-white p-6 rounded-xl shadow mb-8">
+            <h4 className="text-xl font-semibold text-gray-700 mb-4">Income Sources Summary</h4>
+            {incomeCategoryData.length > 0 ? (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {incomeCategoryData.map((category) => (
+                                <tr key={category.name}>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{category.name}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold text-right">
+                                        ${category.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </td>
+                                </tr>
                             ))}
-                        </Pie>
-                        <Tooltip formatter={(value: number) => [`$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, "Amount"]} />
-                        <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }} /> {/* Decreased font size */}
-                    </PieChart>
-                </ResponsiveContainer>
+                        </tbody>
+                    </table>
+                </div>
             ) : (
-                <div className="flex justify-center items-center h-full bg-gray-100 rounded-lg">
-                    <p className="text-gray-500">No income data available for chart.</p>
+                <div className="flex justify-center items-center h-32 bg-gray-100 rounded-lg">
+                    <p className="text-gray-500">No income category data available.</p>
                 </div>
             )}
         </div>

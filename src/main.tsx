@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AuthProvider } from './AuthContext';
@@ -11,6 +11,8 @@ import Home from './routes/Home';
 import Ledger from './routes/Ledger';
 import Expenses from './components/ledger/Expenses';
 import Transactions from './components/ledger/Transactions';
+import Assets from './components/ledger/Assets';
+import Income from './components/ledger/Income';
 import Login from './routes/Login';
 import ProtectedRoute from './routes/ProtectedRoute';
 
@@ -48,7 +50,7 @@ const router = createBrowserRouter([
                         path: 'ledger',
                         element: <Ledger />,
                         children: [
-                            { index: true, element: <div>Select a category from the sidebar.</div> },
+                            { index: true, element: <Navigate to="/ledger/expenses" replace /> },
                             {
                                 path: 'expenses',
                                 element: <Expenses />,
@@ -56,6 +58,14 @@ const router = createBrowserRouter([
                             {
                                 path: 'transactions',
                                 element: <Transactions />,
+                            },
+                            {
+                                path: 'assets',
+                                element: <Assets />,
+                            },
+                            {
+                                path: 'income',
+                                element: <Income />,
                             },
                         ],
                     },
