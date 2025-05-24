@@ -10,7 +10,7 @@ interface ContactListProps {
 
 const ContactList: React.FC<ContactListProps> = ({ contacts, onShowToast, onToggleDetails }) => (
     <div className="flex flex-col flex-grow min-h-0">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">All Contacts</h2>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6">All Contacts ({contacts.length})</h2>
         <div className="overflow-y-auto pr-2">
             {contacts.map(contact => (
                 <ContactListItem

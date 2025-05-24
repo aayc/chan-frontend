@@ -5,7 +5,7 @@ import { Contact } from '../../types/people';
 interface ContactListItemProps {
     contact: Contact;
     onShowToast: (message: string, type: 'success' | 'error') => void;
-    onToggleDetails: () => void;
+    onToggleDetails: (contactId: string) => void;
 }
 
 const ContactListItem: React.FC<ContactListItemProps> = ({ contact, onShowToast, onToggleDetails }) => {
@@ -22,7 +22,10 @@ const ContactListItem: React.FC<ContactListItemProps> = ({ contact, onShowToast,
     };
 
     return (
-        <div className="bg-white p-4 rounded-lg shadow flex items-center justify-between hover:shadow-md transition-shadow duration-200 ease-in-out mb-3">
+        <div
+            className="bg-white p-4 rounded-lg shadow flex items-center justify-between hover:shadow-md transition-shadow duration-200 ease-in-out mb-3 cursor-pointer hover:bg-gray-50"
+            onClick={() => onToggleDetails(contact.id)}
+        >
             <div className="flex items-center">
                 {contact.avatar ? (
                     <img src={contact.avatar} alt={contact.name} className="w-12 h-12 rounded-full mr-4 object-cover" />
@@ -59,13 +62,7 @@ const ContactListItem: React.FC<ContactListItemProps> = ({ contact, onShowToast,
                     </div>
                 </div>
             </div>
-            <div className="flex items-center space-x-2 relative">
-                <button
-                    onClick={onToggleDetails}
-                    className="p-2 bg-gray-100 text-black hover:bg-gray-200 rounded-md flex items-center text-sm contact-view-button"
-                >
-                    View
-                </button>
+            <div className="flex items-center space-x-2 relative" onClick={(e) => e.stopPropagation()}>
                 <div className="relative">
                     <button
                         onClick={() => setShowCopyDropdown(!showCopyDropdown)}

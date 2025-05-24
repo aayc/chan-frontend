@@ -22,7 +22,7 @@ const ActionableInteractions: React.FC<ActionableInteractionsProps> = ({ interac
         <div className="bg-white p-6 rounded-lg shadow mb-8">
             <h2 className="text-xl font-semibold text-gray-700 mb-4 flex items-center">
                 <HiOutlineBellAlert className="mr-2 h-6 w-6 text-yellow-500" />
-                Actionable Interactions (Next 48 Hours)
+                Actionable (Next 48 Hours)
             </h2>
             <ul className="space-y-3">
                 {interactions.map(interaction => (

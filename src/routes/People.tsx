@@ -2,10 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../AuthContext';
 import { Sidebar } from '../components/shared/Sidebar';
-import StatsCard from "../components/people/StatsCard";
 import { HiOutlineUserGroup } from 'react-icons/hi2';
 import { Contact, Interaction } from '../types/people';
-import * as PeopleApi from '../../lib/people/api';
+import * as PeopleApi from '../lib/people/api';
 import ContactList from '../components/people/ContactList';
 import Toast from '../components/people/Toast';
 import CheckboxPopoverFilter from '../components/people/CheckboxPopoverFilter';
@@ -193,11 +192,6 @@ export default function People() {
                     appIcon={<HiOutlineUserGroup className="text-3xl mr-2 text-blue-500" />}
                 />
                 <div className="flex-1 p-10 flex flex-col overflow-hidden">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        {stats.map((stat) => (
-                            <StatsCard key={stat.title} title={stat.title} value={stat.value} change={stat.change} icon={stat.icon} />
-                        ))}
-                    </div>
                     <ActionableInteractions interactions={actionableInteractions} />
 
                     {/* Filter and Sort Controls */}

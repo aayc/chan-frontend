@@ -1,4 +1,4 @@
-import { Contact, Interaction } from '../../src/types/people';
+import { Contact, Interaction } from '../../types/people';
 
 // --- Data Store Interface ---
 export interface PeopleStorage {
