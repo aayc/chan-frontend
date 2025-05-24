@@ -140,7 +140,7 @@ const ContactDetailModal: React.FC<ContactDetailModalProps> = ({ contact, onClos
                         updates[key] = editableContact[key];
                     }
                 } else {
-                    updates[key] = editableContact[key];
+                    Object.assign(updates, { [key]: editableContact[key] });
                 }
             }
         });

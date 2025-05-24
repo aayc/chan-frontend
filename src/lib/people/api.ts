@@ -8,6 +8,7 @@ export interface PeopleStorage {
     createContact(contactData: Omit<Contact, 'id'>): Promise<Contact>;
     deleteContact(contactId: string): Promise<void>;
     updateInteraction(interactionId: string, updates: Partial<Pick<Interaction, 'status' | 'details' | 'changelog'>>): Promise<Interaction>;
+    createInteraction(interactionData: Pick<Interaction, 'contactId' | 'contactName' | 'type' | 'dueDate' | 'details'>): Promise<Interaction>;
     deleteInteraction(interactionId: string): Promise<void>;
 }
 
@@ -33,6 +34,7 @@ class MockPeopleStorage implements PeopleStorage {
     ];
 
     private nextContactId: number = this.mockContactsData.length + 1;
+    private nextInteractionId: number = this.mockInteractionsData.length + 1;
 
     private async simulateDelay(): Promise<void> {
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -93,6 +95,22 @@ class MockPeopleStorage implements PeopleStorage {
         return JSON.parse(JSON.stringify(this.mockInteractionsData[interactionIndex]));
     }
 
+    async createInteraction(interactionData: Pick<Interaction, 'contactId' | 'contactName' | 'type' | 'dueDate' | 'details'>): Promise<Interaction> {
+        await this.simulateDelay();
+        const newInteraction: Interaction = {
+            id: `int${this.nextInteractionId++}`,
+            contactId: interactionData.contactId,
+            contactName: interactionData.contactName,
+            type: interactionData.type,
+            dueDate: interactionData.dueDate,
+            details: interactionData.details,
+            status: 'Pending',
+            changelog: [],
+        };
+        this.mockInteractionsData.push(newInteraction);
+        return JSON.parse(JSON.stringify(newInteraction));
+    }
+
     async deleteInteraction(interactionId: string): Promise<void> {
         await this.simulateDelay();
         const initialLength = this.mockInteractionsData.length;
@@ -132,6 +150,10 @@ export const deleteContact = async (contactId: string): Promise<void> => {
 
 export const updateInteraction = async (interactionId: string, updates: Partial<Pick<Interaction, 'status' | 'details' | 'changelog'>>): Promise<Interaction> => {
     return peopleStorageService.updateInteraction(interactionId, updates);
+};
+
+export const createInteraction = async (interactionData: Pick<Interaction, 'contactId' | 'contactName' | 'type' | 'dueDate' | 'details'>): Promise<Interaction> => {
+    return peopleStorageService.createInteraction(interactionData);
 };
 
 export const deleteInteraction = async (interactionId: string): Promise<void> => {

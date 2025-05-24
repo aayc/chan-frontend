@@ -136,7 +136,7 @@ const Interactions: React.FC<InteractionsProps> = ({ interactions, onUpdateInter
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold text-gray-700 flex items-center">
                         <HiOutlineBellAlert className="mr-2 h-6 w-6 text-yellow-500" />
-                        Interactions
+                        {selectedFilter} Interactions
                     </h2>
                     <select
                         value={selectedFilter}

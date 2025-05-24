@@ -81,6 +81,17 @@ export default function People() {
         }
     };
 
+    const handleCreateInteraction = async (interactionData: Pick<Interaction, 'contactId' | 'contactName' | 'type' | 'dueDate' | 'details'>) => {
+        try {
+            const newInteraction = await PeopleApi.createInteraction(interactionData);
+            setActionableInteractions(prevInteractions => [newInteraction, ...prevInteractions]);
+            showToast('Interaction logged successfully!', 'success');
+        } catch (error) {
+            console.error("Failed to create interaction:", error);
+            showToast('Failed to log interaction', 'error');
+        }
+    };
+
     const handleDeleteInteraction = async (interactionId: string) => {
         try {
             await PeopleApi.deleteInteraction(interactionId);
@@ -272,6 +283,7 @@ export default function People() {
                         contacts={displayedContacts}
                         onShowToast={showToast}
                         onToggleDetails={handleToggleContactDetails}
+                        onCreateInteraction={handleCreateInteraction}
                     />
                 </div>
             </div>

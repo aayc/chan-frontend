@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Contact } from '../../types/people';
+import { Contact, Interaction } from '../../types/people';
 import ContactListItem from './ContactListItem';
 import { HiOutlineSearch } from 'react-icons/hi';
 
@@ -7,9 +7,10 @@ interface ContactListProps {
     contacts: Contact[];
     onShowToast: (message: string, type: 'success' | 'error') => void;
     onToggleDetails: (contactId: string) => void;
+    onCreateInteraction: (interactionData: Pick<Interaction, 'contactId' | 'contactName' | 'type' | 'dueDate' | 'details'>) => Promise<void>;
 }
 
-const ContactList: React.FC<ContactListProps> = ({ contacts, onShowToast, onToggleDetails }) => {
+const ContactList: React.FC<ContactListProps> = ({ contacts, onShowToast, onToggleDetails, onCreateInteraction }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredContacts = useMemo(() => {
@@ -45,6 +46,7 @@ const ContactList: React.FC<ContactListProps> = ({ contacts, onShowToast, onTogg
                         contact={contact}
                         onShowToast={onShowToast}
                         onToggleDetails={() => onToggleDetails(contact.id)}
+                        onCreateInteraction={onCreateInteraction}
                     />
                 ))}
                 {filteredContacts.length === 0 && <p className="text-gray-500 text-center py-4">No contacts found{searchTerm ? ' matching your search' : ''}.</p>}
