@@ -10,6 +10,12 @@ export interface Contact {
     notes?: string;
     company?: string; // Added company field
     birthday?: string; // Added birthday field (ISO Date string)
+    changelog: ChangelogEntry[];
+}
+
+export interface ChangelogEntry {
+    timestamp: string; // ISO Date string
+    updateDetails: Record<string, [any, any]>; // Description of the change
 }
 
 export interface Interaction {
@@ -20,4 +26,5 @@ export interface Interaction {
     dueDate: string; // e.g., "2024-07-28T10:00:00Z"
     status: 'Pending' | 'Completed' | 'Overdue';
     details?: string;
+    changelog: ChangelogEntry[];
 } 

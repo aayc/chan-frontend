@@ -9,7 +9,7 @@ import ContactList from '../components/people/ContactList';
 import Toast from '../components/people/Toast';
 import CheckboxPopoverFilter from '../components/people/CheckboxPopoverFilter';
 import ContactDetailModal from '../components/people/ContactDetailModal';
-import ActionableInteractions from '../components/people/ActionableInteractions';
+import Interactions from '../components/people/Interactions';
 
 export default function People() {
     const location = useLocation();
@@ -63,6 +63,34 @@ export default function People() {
         } catch (error) {
             console.error("Failed to update contact:", error);
             showToast('Failed to update contact', 'error');
+        }
+    };
+
+    const handleUpdateInteraction = async (interactionId: string, updates: Partial<Pick<Interaction, 'status' | 'details' | 'changelog'>>) => {
+        try {
+            const updatedInteraction = await PeopleApi.updateInteraction(interactionId, updates);
+            setActionableInteractions(prevInteractions =>
+                prevInteractions.map(interaction =>
+                    interaction.id === interactionId ? updatedInteraction : interaction
+                )
+            );
+            showToast('Interaction updated!', 'success');
+        } catch (error) {
+            console.error("Failed to update interaction:", error);
+            showToast('Failed to update interaction', 'error');
+        }
+    };
+
+    const handleDeleteInteraction = async (interactionId: string) => {
+        try {
+            await PeopleApi.deleteInteraction(interactionId);
+            setActionableInteractions(prevInteractions =>
+                prevInteractions.filter(interaction => interaction.id !== interactionId)
+            );
+            showToast('Interaction deleted!', 'success');
+        } catch (error) {
+            console.error("Failed to delete interaction:", error);
+            showToast('Failed to delete interaction', 'error');
         }
     };
 
@@ -192,7 +220,11 @@ export default function People() {
                     appIcon={<HiOutlineUserGroup className="text-3xl mr-2 text-blue-500" />}
                 />
                 <div className="flex-1 p-10 flex flex-col overflow-hidden">
-                    <ActionableInteractions interactions={actionableInteractions} />
+                    <Interactions
+                        interactions={actionableInteractions}
+                        onUpdateInteraction={handleUpdateInteraction}
+                        onDeleteInteraction={handleDeleteInteraction}
+                    />
 
                     {/* Filter and Sort Controls */}
                     <div className="mb-6 p-4 bg-white rounded-lg shadow">
