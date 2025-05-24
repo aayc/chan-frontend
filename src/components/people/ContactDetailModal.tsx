@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Contact } from '../../types/people';
-import { HiOutlineXMark, HiOutlineEnvelope, HiOutlinePhone, HiOutlineMapPin, HiOutlineCalendarDays, HiOutlineBriefcase, HiOutlineUserCircle, HiOutlineClock, HiOutlineTag } from 'react-icons/hi2';
+import { HiOutlineXMark, HiOutlineEnvelope, HiOutlinePhone, HiOutlineMapPin, HiOutlineCalendarDays, HiOutlineBriefcase, HiOutlineUserCircle, HiOutlineClock, HiOutlineTag, HiOutlineCheckCircle } from 'react-icons/hi2';
 
 interface ContactDetailModalProps {
     contact: Contact;
     onClose: () => void;
-    onUpdate: (field: keyof Contact, value: any) => void;
+    onUpdate: (contactId: string, updates: Partial<Contact>) => void;
 }
 
 const ANIMATION_DURATION = 200; // ms, match with Tailwind duration class e.g., duration-200
@@ -14,23 +14,45 @@ const EditableDetailItem: React.FC<{
     icon: React.ElementType;
     label: string;
     field: keyof Contact;
-    value?: string;
-    onUpdate: (field: keyof Contact, value: any) => void;
+    value?: string | string[];
+    onLocalChange: (field: keyof Contact, value: any) => void;
     inputType?: 'text' | 'date' | 'textarea';
-}> = ({ icon: Icon, label, field, value, onUpdate, inputType = 'text' }) => {
-    const [currentValue, setCurrentValue] = useState(value || '');
+}> = ({ icon: Icon, label, field, value, onLocalChange, inputType = 'text' }) => {
+    const [currentValue, setCurrentValue] = useState(value || (inputType === 'textarea' || inputType === 'text' ? '' : []));
 
     useEffect(() => {
-        setCurrentValue(value || '');
-    }, [value]);
-
-    const handleBlur = () => {
-        if (field === 'birthday' || field === 'lastContact') {
-            onUpdate(field, currentValue ? new Date(currentValue).toISOString() : undefined);
-        } else if (field === 'categories') {
-            onUpdate(field, currentValue.split(',').map(s => s.trim()).filter(Boolean));
+        if (field === 'categories' && Array.isArray(value)) {
+            setCurrentValue(value.join(', '));
         } else {
-            onUpdate(field, currentValue);
+            setCurrentValue(value || '');
+        }
+    }, [value, field]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setCurrentValue(e.target.value);
+    };
+
+    const triggerLocalChange = () => {
+        if (field === 'birthday' || field === 'lastContact') {
+            const dateString = currentValue as string;
+            if (!dateString) { // Handles empty string
+                onLocalChange(field, undefined);
+            } else {
+                const dateObj = new Date(dateString);
+                // Check if the date object is valid
+                if (!isNaN(dateObj.getTime())) {
+                    onLocalChange(field, dateObj.toISOString());
+                } else {
+                    // If date string is invalid (e.g., partially typed or incorrect format)
+                    // We might choose to pass undefined or the original invalid string depending on desired UX
+                    // For now, let's pass undefined to clear it or prevent update with invalid data
+                    onLocalChange(field, undefined);
+                }
+            }
+        } else if (field === 'categories') {
+            onLocalChange(field, (currentValue as string).split(',').map(s => s.trim()).filter(Boolean));
+        } else {
+            onLocalChange(field, currentValue);
         }
     };
 
@@ -43,9 +65,9 @@ const EditableDetailItem: React.FC<{
                 </label>
                 <textarea
                     id={`${field}-${label}`}
-                    value={currentValue}
-                    onChange={(e) => setCurrentValue(e.target.value)}
-                    onBlur={handleBlur}
+                    value={currentValue as string}
+                    onChange={handleInputChange}
+                    onBlur={triggerLocalChange}
                     className="w-full text-sm text-gray-800 border border-gray-300 rounded-md p-1.5 focus:ring-blue-500 focus:border-blue-500 resize-none"
                     rows={3}
                 />
@@ -53,11 +75,11 @@ const EditableDetailItem: React.FC<{
         );
     }
 
-    const displayValue = (field === 'birthday' || field === 'lastContact') && currentValue
-        ? new Date(currentValue).toISOString().split('T')[0]
-        : (field === 'categories' && Array.isArray(currentValue))
-            ? currentValue.join(', ')
-            : currentValue;
+    const displayVal = (field === 'birthday' || field === 'lastContact')
+        ? (currentValue && !isNaN(new Date(currentValue as string).getTime())
+            ? new Date(currentValue as string).toISOString().split('T')[0]
+            : '')
+        : currentValue;
 
     return (
         <div className="flex items-start py-2">
@@ -67,9 +89,9 @@ const EditableDetailItem: React.FC<{
                 <input
                     type={inputType === 'date' ? 'date' : 'text'}
                     id={`${field}-${label}`}
-                    value={displayValue}
-                    onChange={(e) => setCurrentValue(e.target.value)}
-                    onBlur={handleBlur}
+                    value={displayVal as string}
+                    onChange={handleInputChange}
+                    onBlur={triggerLocalChange}
                     className="w-full text-sm text-gray-800 border border-gray-300 rounded-md p-1 focus:ring-blue-500 focus:border-blue-500 mt-0.5"
                 />
             </div>
@@ -80,42 +102,57 @@ const EditableDetailItem: React.FC<{
 const ContactDetailModal: React.FC<ContactDetailModalProps> = ({ contact, onClose, onUpdate }) => {
     const [isMounted, setIsMounted] = useState(false);
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+    const [editableContact, setEditableContact] = useState<Contact>(JSON.parse(JSON.stringify(contact)));
 
     useEffect(() => {
-        // Trigger mount animation
-        const timer = setTimeout(() => {
-            setIsMounted(true);
-        }, 10); // Small delay to allow initial paint
-
-        // Handle Escape key to close modal
+        setEditableContact(JSON.parse(JSON.stringify(contact)));
+        const timer = setTimeout(() => setIsMounted(true), 10);
         const handleEsc = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                handleClose();
-            }
+            if (event.key === 'Escape') handleAnimatedClose();
         };
         window.addEventListener('keydown', handleEsc);
         return () => {
             clearTimeout(timer);
             window.removeEventListener('keydown', handleEsc);
-            // Reset mounted state if component unmounts, for next time it's opened
-            // This is important if the modal component itself stays in the DOM but is hidden by parent
-            // However, in our case People.tsx unmounts it, so this is mostly for robustness.
             setIsMounted(false);
         };
-    }, []); // Run once on mount
+    }, [contact]);
 
-    const handleClose = () => {
+    const handleLocalUpdate = (field: keyof Contact, value: any) => {
+        setEditableContact(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleAnimatedClose = () => {
         setIsAnimatingOut(true);
-        setIsMounted(false); // Start transition out
+        setIsMounted(false);
         setTimeout(() => {
             onClose();
-            setIsAnimatingOut(false); // Reset for next open
+            setIsAnimatingOut(false);
         }, ANIMATION_DURATION);
+    };
+
+    const handleSaveChanges = () => {
+        const updates: Partial<Contact> = {};
+        (Object.keys(editableContact) as Array<keyof Contact>).forEach(key => {
+            if (editableContact[key] !== contact[key]) {
+                if (key === 'categories') {
+                    if (JSON.stringify(editableContact[key]) !== JSON.stringify(contact[key])) {
+                        updates[key] = editableContact[key];
+                    }
+                } else {
+                    updates[key] = editableContact[key];
+                }
+            }
+        });
+
+        if (Object.keys(updates).length > 0) {
+            onUpdate(contact.id, updates);
+        }
+        handleAnimatedClose();
     };
 
     if (!contact) return null;
 
-    // Determine current opacity and scale based on state
     const backdropOpacity = isMounted && !isAnimatingOut ? 'opacity-100' : 'opacity-0';
     const panelOpacity = isMounted && !isAnimatingOut ? 'opacity-100' : 'opacity-0';
     const panelScale = isMounted && !isAnimatingOut ? 'scale-100' : 'scale-95';
@@ -123,7 +160,7 @@ const ContactDetailModal: React.FC<ContactDetailModalProps> = ({ contact, onClos
     return (
         <div
             className={`fixed inset-0 overflow-y-auto h-full w-full z-40 flex items-center justify-center p-4 transition-opacity duration-${ANIMATION_DURATION} ease-in-out ${backdropOpacity} bg-black/20 backdrop-blur-sm`}
-            onClick={handleClose}
+            onClick={handleAnimatedClose}
         >
             <div
                 className={`relative bg-white w-full max-w-lg mx-auto rounded-lg shadow-xl p-6 space-y-3 transition-all duration-${ANIMATION_DURATION} ease-in-out ${panelOpacity} ${panelScale}`}
@@ -131,40 +168,50 @@ const ContactDetailModal: React.FC<ContactDetailModalProps> = ({ contact, onClos
             >
                 <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center">
-                        {contact.avatar ? (
-                            <img src={contact.avatar} alt={contact.name} className="w-12 h-12 rounded-full mr-3 object-cover" />
+                        {editableContact.avatar ? (
+                            <img src={editableContact.avatar} alt={editableContact.name} className="w-12 h-12 rounded-full mr-3 object-cover" />
                         ) : (
                             <HiOutlineUserCircle className="w-12 h-12 rounded-full mr-3 text-gray-400" />
                         )}
                         <div className="w-full">
                             <input
                                 type="text"
-                                value={contact.name}
-                                onChange={(e) => onUpdate('name', e.target.value)}
+                                value={editableContact.name}
+                                onChange={(e) => handleLocalUpdate('name', e.target.value)}
                                 className="text-xl font-semibold text-gray-900 bg-transparent focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 rounded p-0.5 -ml-0.5 w-full"
                                 placeholder="Name"
                             />
                             <input
                                 type="text"
-                                value={contact.company || ''}
+                                value={editableContact.company || ''}
                                 placeholder="Company"
-                                onChange={(e) => onUpdate('company', e.target.value)}
+                                onChange={(e) => handleLocalUpdate('company', e.target.value)}
                                 className="text-sm text-gray-500 bg-transparent focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 rounded p-0.5 -ml-0.5 w-full mt-0.5"
                             />
                         </div>
                     </div>
-                    <button onClick={handleClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 absolute top-3 right-3">
+                    <button onClick={handleAnimatedClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 absolute top-3 right-3">
                         <HiOutlineXMark className="h-6 w-6" />
                     </button>
                 </div>
 
-                <EditableDetailItem icon={HiOutlineEnvelope} label="Email" field="email" value={contact.email} onUpdate={onUpdate} />
-                <EditableDetailItem icon={HiOutlinePhone} label="Phone" field="phone" value={contact.phone} onUpdate={onUpdate} />
-                <EditableDetailItem icon={HiOutlineMapPin} label="Location" field="location" value={contact.location} onUpdate={onUpdate} />
-                <EditableDetailItem icon={HiOutlineCalendarDays} label="Birthday" field="birthday" value={contact.birthday} onUpdate={onUpdate} inputType="date" />
-                <EditableDetailItem icon={HiOutlineClock} label="Last Contact" field="lastContact" value={contact.lastContact} onUpdate={onUpdate} inputType="date" />
-                <EditableDetailItem icon={HiOutlineTag} label="Categories (comma-separated)" field="categories" value={Array.isArray(contact.categories) ? contact.categories.join(', ') : ''} onUpdate={onUpdate} />
-                <EditableDetailItem icon={HiOutlineBriefcase} label="Notes" field="notes" value={contact.notes} onUpdate={onUpdate} inputType="textarea" />
+                <EditableDetailItem icon={HiOutlineEnvelope} label="Email" field="email" value={editableContact.email} onLocalChange={handleLocalUpdate} />
+                <EditableDetailItem icon={HiOutlinePhone} label="Phone" field="phone" value={editableContact.phone} onLocalChange={handleLocalUpdate} />
+                <EditableDetailItem icon={HiOutlineMapPin} label="Location" field="location" value={editableContact.location} onLocalChange={handleLocalUpdate} />
+                <EditableDetailItem icon={HiOutlineCalendarDays} label="Birthday" field="birthday" value={editableContact.birthday} onLocalChange={handleLocalUpdate} inputType="date" />
+                <EditableDetailItem icon={HiOutlineClock} label="Last Contact" field="lastContact" value={editableContact.lastContact} onLocalChange={handleLocalUpdate} inputType="date" />
+                <EditableDetailItem icon={HiOutlineTag} label="Categories (comma-separated)" field="categories" value={editableContact.categories} onLocalChange={handleLocalUpdate} />
+                <EditableDetailItem icon={HiOutlineBriefcase} label="Notes" field="notes" value={editableContact.notes} onLocalChange={handleLocalUpdate} inputType="textarea" />
+
+                <div className="pt-4">
+                    <button
+                        onClick={handleSaveChanges}
+                        className="w-full !bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                        <HiOutlineCheckCircle className="h-5 w-5 mr-2" />
+                        Save Changes
+                    </button>
+                </div>
             </div>
         </div>
     );

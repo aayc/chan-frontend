@@ -52,12 +52,12 @@ export default function People() {
         setDetailedContactId(prevId => (prevId === contactId ? null : contactId));
     };
 
-    const handleUpdateContactDetail = async (contactId: string, field: keyof Contact, value: any) => {
+    const handleUpdateContactDetail = async (contactId: string, updates: Partial<Contact>) => {
         try {
-            const updatedContact = await PeopleApi.updateContact(contactId, { [field]: value });
+            const updatedContactFromApi = await PeopleApi.updateContact(contactId, updates);
             setAllContacts(prevContacts =>
                 prevContacts.map(contact =>
-                    contact.id === contactId ? updatedContact : contact
+                    contact.id === contactId ? updatedContactFromApi : contact
                 )
             );
             showToast('Contact updated!', 'success');
@@ -261,7 +261,7 @@ export default function People() {
                 <ContactDetailModal
                     contact={activeContactForModal}
                     onClose={() => setDetailedContactId(null)}
-                    onUpdate={handleUpdateContactDetail}
+                    onUpdate={(contactId, updates) => handleUpdateContactDetail(contactId, updates)}
                 />
             )}
         </>
