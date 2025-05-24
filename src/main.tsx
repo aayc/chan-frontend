@@ -15,6 +15,7 @@ import Assets from './components/ledger/Assets';
 import Income from './components/ledger/Income';
 import Login from './routes/Login';
 import ProtectedRoute from './routes/ProtectedRoute';
+import People from './routes/People';
 
 import './index.css';
 import { componentStyles } from './components/shared/styles';
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
                             },
                         ],
                     },
+                    {
+                        path: 'people',
+                        element: <People />
+                    }
                 ]
             },
             { path: 'login', element: <Login /> },
