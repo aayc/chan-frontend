@@ -10,6 +10,7 @@ export interface Contact {
     notes?: string;
     company?: string; // Added company field
     birthday?: string; // Added birthday field (ISO Date string)
+    linkedin?: string; // Optional LinkedIn profile URL
     changelog: ChangelogEntry[];
 }
 

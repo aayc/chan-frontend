@@ -105,6 +105,17 @@ export default function People() {
         }
     };
 
+    const handleCreateContact = async (contactData: Omit<Contact, 'id'>) => {
+        try {
+            const newContact = await PeopleApi.createContact(contactData);
+            setAllContacts(prevContacts => [newContact, ...prevContacts]);
+            showToast('Contact created successfully!', 'success');
+        } catch (error) {
+            console.error("Failed to create contact:", error);
+            showToast('Failed to create contact', 'error');
+        }
+    };
+
     const stats = useMemo(() => [
         { title: "Total Contacts", value: allContacts.length.toString(), change: "", icon: "users" },
         {
@@ -284,6 +295,7 @@ export default function People() {
                         onShowToast={showToast}
                         onToggleDetails={handleToggleContactDetails}
                         onCreateInteraction={handleCreateInteraction}
+                        onCreateContact={handleCreateContact}
                     />
                 </div>
             </div>

@@ -120,8 +120,7 @@ const Interactions: React.FC<InteractionsProps> = ({ interactions, onUpdateInter
             case 'Upcoming':
                 // Pending items due after 24 hours from now but within 72 hours from now.
                 return interaction.status === 'Pending' &&
-                    dueDateMs > twentyFourHoursFromNow &&
-                    dueDateMs <= seventyTwoHoursFromNow;
+                    dueDateMs > twentyFourHoursFromNow
             case 'Historical':
                 // Interactions whose due date has passed OR are completed.
                 return interaction.status === 'Completed' || dueDateMs < now;

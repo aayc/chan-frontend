@@ -1,7 +1,12 @@
 import { Contact, Interaction } from '../../types/people';
+import { auth } from '../../firebase';
+import type { User } from 'firebase/auth';
+
+// --- Server API Implementation ---
+const API_BASE_URL = 'http://localhost:8000'; // Replace with your actual API base URL
 
 // --- Data Store Interface ---
-export interface PeopleStorage {
+export interface ContactsAPI {
     getContacts(): Promise<Contact[]>;
     getInteractions(): Promise<Interaction[]>;
     updateContact(contactId: string, updates: Partial<Contact>): Promise<Contact>;
@@ -13,10 +18,10 @@ export interface PeopleStorage {
 }
 
 // --- Mock Implementation ---
-class MockPeopleStorage implements PeopleStorage {
+class MockPeopleAPI implements ContactsAPI {
     private mockContactsData: Contact[] = [
-        { id: "c1", name: "Alex Thompson", email: "alex@example.com", phone: "(555) 123-4567", location: "San Francisco, CA", lastContact: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), avatar: "https://randomuser.me/api/portraits/men/32.jpg", categories: ["Work"], notes: "Interested in SaaS solutions.", company: "Innovatech", birthday: "1985-07-15", changelog: [] },
-        { id: "c2", name: "Jessica Lee", email: "jessica@example.com", phone: "(555) 987-6543", location: "New York, NY", lastContact: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), avatar: "https://randomuser.me/api/portraits/women/44.jpg", categories: ["Friend"], company: "Self-Employed", birthday: "1993-02-20", changelog: [] },
+        { id: "c1", name: "Alex Thompson", email: "alex@example.com", phone: "(555) 123-4567", location: "San Francisco, CA", lastContact: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), avatar: "https://randomuser.me/api/portraits/men/32.jpg", categories: ["Work"], notes: "Interested in SaaS solutions.", company: "Innovatech", birthday: "1985-07-15", linkedin: "https://linkedin.com/in/alexthompson", changelog: [] },
+        { id: "c2", name: "Jessica Lee", email: "jessica@example.com", phone: "(555) 987-6543", location: "New York, NY", lastContact: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), avatar: "https://randomuser.me/api/portraits/women/44.jpg", categories: ["Friend"], company: "Self-Employed", birthday: "1993-02-20", linkedin: "https://linkedin.com/in/jessicalee", changelog: [] },
         { id: "c3", name: "Marcus Johnson", email: "marcus@example.com", phone: "(555) 456-7890", location: "Chicago, IL", lastContact: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(), avatar: "https://randomuser.me/api/portraits/men/34.jpg", categories: ["Work"], notes: "Key decision maker at Globex.", company: "Globex Corp", birthday: "1990-11-22", changelog: [] },
         { id: "c4", name: "Samantha Green", email: "sam@example.com", phone: "(555) 234-5678", location: "Austin, TX", lastContact: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), avatar: "https://randomuser.me/api/portraits/women/35.jpg", categories: ["Networking"], company: "Tech Solutions", birthday: "1982-06-05", changelog: [] },
         { id: "c5", name: "Maria Rodriguez", email: "maria@example.com", phone: "(555) 876-5432", location: "Miami, FL", avatar: "https://randomuser.me/api/portraits/women/36.jpg", categories: ["Family"], notes: "Birthday next month!", birthday: "1978-05-25", changelog: [] },
@@ -122,10 +127,129 @@ class MockPeopleStorage implements PeopleStorage {
     }
 }
 
+// IMPORTANT: Replace this with your actual Firebase authentication token provider
+async function getAuthToken(): Promise<string | null> {
+    if (!auth) { // Check if auth is defined
+        console.warn("getAuthToken: Firebase auth module is not available.");
+        return null;
+    }
+
+    const user: User | null = auth.currentUser;
+    if (user) {
+        try {
+            return await user.getIdToken();
+        } catch (error) {
+            console.error('Error getting Firebase ID token:', error);
+            return null;
+        }
+    }
+    console.warn("getAuthToken: No current user. User might not be logged in.");
+    return null;
+}
+
+class ServerContactsAPI implements ContactsAPI {
+    private baseUrl: string;
+    private tokenProvider: () => Promise<string | null>;
+
+    constructor(baseUrl: string, tokenProvider: () => Promise<string | null>) {
+        this.baseUrl = baseUrl;
+        this.tokenProvider = tokenProvider;
+    }
+
+    private async _fetchWithAuth(endpoint: string, options: RequestInit = {}): Promise<any> {
+        const token = await this.tokenProvider();
+        if (!token) {
+            throw new Error('Authentication token not available. User might not be logged in.');
+        }
+
+        const headers: HeadersInit = {
+            ...options.headers,
+            'Authorization': `Bearer ${token}`,
+        } as Record<string, string>;
+
+        // Only add Content-Type if there's a body (common for POST, PUT, PATCH)
+        if (options.body) {
+            headers['Content-Type'] = 'application/json';
+        }
+
+        const response = await fetch(`${this.baseUrl}${endpoint}`, { ...options, headers });
+
+        if (!response.ok) {
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch (e) {
+                // Not a JSON error response, or empty body
+                const errorText = await response.text(); // Attempt to get text for more context
+                throw new Error(`HTTP error ${response.status}: ${response.statusText}. ${errorText || ''}`.trim());
+            }
+            // FastAPI often returns errors with a 'detail' field
+            const message = errorData?.detail || `HTTP error ${response.status}`;
+            throw new Error(typeof message === 'string' ? message : JSON.stringify(message));
+        }
+
+        if (response.status === 204) { // No Content
+            return undefined;
+        }
+        return response.json();
+    }
+
+    async getContacts(): Promise<Contact[]> {
+        return this._fetchWithAuth('/contacts');
+    }
+
+    async getInteractions(): Promise<Interaction[]> {
+        // Assuming the backend /interactions route can filter by contactId or return all
+        // The provided FastAPI backend get_interactions_endpoint supports an optional contact_id query param
+        return this._fetchWithAuth('/interactions');
+    }
+
+    async createContact(contactData: Omit<Contact, 'id'>): Promise<Contact> {
+        return this._fetchWithAuth('/contacts', {
+            method: 'POST',
+            body: JSON.stringify(contactData),
+        });
+    }
+
+    async updateContact(contactId: string, updates: Partial<Contact>): Promise<Contact> {
+        return this._fetchWithAuth(`/contacts/${contactId}`, {
+            method: 'PUT',
+            body: JSON.stringify(updates),
+        });
+    }
+
+    async deleteContact(contactId: string): Promise<void> {
+        await this._fetchWithAuth(`/contacts/${contactId}`, {
+            method: 'DELETE',
+        });
+    }
+
+    async createInteraction(interactionData: Pick<Interaction, 'contactId' | 'contactName' | 'type' | 'dueDate' | 'details'>): Promise<Interaction> {
+        return this._fetchWithAuth('/interactions', {
+            method: 'POST',
+            body: JSON.stringify(interactionData),
+        });
+    }
+
+    async updateInteraction(interactionId: string, updates: Partial<Pick<Interaction, 'status' | 'details' | 'changelog'>>): Promise<Interaction> {
+        return this._fetchWithAuth(`/interactions/${interactionId}`, {
+            method: 'PUT',
+            body: JSON.stringify(updates),
+        });
+    }
+
+    async deleteInteraction(interactionId: string): Promise<void> {
+        await this._fetchWithAuth(`/interactions/${interactionId}`, {
+            method: 'DELETE',
+        });
+    }
+}
+
 // --- API Service Configuration ---
-// For now, we directly use MockPeopleStorage. 
+// For now, we directly use MockPeopleStorage.
 // Later, this could be decided by environment variables or other configurations.
-const peopleStorageService: PeopleStorage = new MockPeopleStorage();
+// const peopleStorageService: PeopleAPI = new MockPeopleAPI();
+const peopleStorageService: ContactsAPI = new ServerContactsAPI(API_BASE_URL, getAuthToken);
 
 // --- Exported API Functions (using the configured service) ---
 export const getContacts = async (): Promise<Contact[]> => {

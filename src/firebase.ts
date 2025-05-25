@@ -1,5 +1,5 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, FirebaseApp } from 'firebase/app';
+import { getAuth, Auth } from 'firebase/auth';
 
 // Validate that all required environment variables are set
 const requiredEnvVars = [
@@ -34,8 +34,8 @@ if (missingEnvVars.length > 0) {
     };
 }
 
-let app;
-let auth;
+let app: FirebaseApp | undefined;
+let auth: Auth | undefined;
 
 if (firebaseConfig) {
     // Initialize Firebase
