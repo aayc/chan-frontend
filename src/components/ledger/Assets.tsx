@@ -6,6 +6,7 @@ import { useAuth } from '../../AuthContext';
 import { createAuthTokenGetter } from '../../lib/utils/auth';
 import { useLedgerTransactions } from '../../hooks/useLedgerData';
 import AssetsSkeleton from '../skeletons/AssetsSkeleton';
+import Transactions from './Transactions';
 // Placeholder for a potential shared SummaryCard, or we can define one locally
 // import { SummaryCard } from '../shared/SummaryCard'; 
 
@@ -106,8 +107,14 @@ const getDisplayPrefixToRemove = (names: string[]): string => {
 };
 
 // Placeholder AssetCard component
-const AssetCard: React.FC<{ asset: Asset }> = ({ asset }) => (
-    <div className="bg-white p-4 rounded-lg shadow-md h-36 flex flex-col justify-between w-full">
+const AssetCard: React.FC<{ asset: Asset; onClick: () => void }> = ({ asset, onClick }) => (
+    <div
+        className="bg-white p-4 rounded-lg shadow-md h-36 flex flex-col justify-between w-full transition-all duration-200 ease-in-out hover:shadow-xl cursor-pointer"
+        onClick={onClick}
+        role="button"
+        tabIndex={0}
+        onKeyPress={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
+    >
         <div>
             <h4 className="text-sm font-semibold text-gray-700 truncate" title={asset.accountName}>{asset.accountName}</h4>
         </div>
@@ -125,7 +132,7 @@ const AssetCard: React.FC<{ asset: Asset }> = ({ asset }) => (
 );
 
 // Placeholder AssetCarousel component
-const AssetCarousel: React.FC<{ title: string; assets: Asset[] }> = ({ title, assets }) => {
+const AssetCarousel: React.FC<{ title: string; assets: Asset[]; onAssetClick: (accountPath: string) => void }> = ({ title, assets, onAssetClick }) => {
     if (assets.length === 0) {
         return null; // Don't render if no assets for this category
     }
@@ -134,7 +141,7 @@ const AssetCarousel: React.FC<{ title: string; assets: Asset[] }> = ({ title, as
             <h3 className="text-xl font-semibold text-gray-800 mb-4">{title}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {assets.map(asset => (
-                    <AssetCard key={asset.fullAccountPath} asset={asset} />
+                    <AssetCard key={asset.fullAccountPath} asset={asset} onClick={() => onAssetClick(asset.fullAccountPath)} />
                 ))}
             </div>
         </div>
@@ -161,6 +168,11 @@ export default function Assets() {
     const [projectedEoyAssets, setProjectedEoyAssets] = useState<number | null>(null);
     const [displayCurrentYear, setDisplayCurrentYear] = useState<number | null>(null);
     const [baselineDateForChanges, setBaselineDateForChanges] = useState<string | null>(null);
+    const [selectedAssetAccountPath, setSelectedAssetAccountPath] = useState<string | null>(null);
+
+    const handleAssetCardClick = (accountPath: string) => {
+        setSelectedAssetAccountPath(prevPath => prevPath === accountPath ? null : accountPath);
+    };
 
     const processTransactionsForAssets = (transactions: LedgerTransaction[]) => {
         if (transactions.length === 0) {
@@ -382,6 +394,20 @@ export default function Assets() {
         return <div className="p-6 text-red-600">Error: {error.message}</div>;
     }
 
+    // Helper to get a display name for the selected account, using the existing formatter
+    const getSelectedAccountDisplayName = () => {
+        if (!selectedAssetAccountPath) return '';
+        // Find the asset to get its potentially simplified name, or format the full path
+        for (const categoryKey in categorizedAssets) {
+            const assetInCategory = categorizedAssets[categoryKey].find(a => a.fullAccountPath === selectedAssetAccountPath);
+            if (assetInCategory) {
+                // Check if the name is empty (was a prefix), use full path formatted if so.
+                return assetInCategory.accountName || formatAccountName(selectedAssetAccountPath);
+            }
+        }
+        return formatAccountName(selectedAssetAccountPath); // Fallback if not found in categorized (should be rare)
+    };
+
     return (
         <div className="space-y-8">
             {/* Overview Section */}
@@ -402,7 +428,7 @@ export default function Assets() {
                 const assetsForCategory = categorizedAssets[categoryTitle] || [];
                 // Render carousel only if there are assets for this category
                 if (assetsForCategory.length > 0) {
-                    return <AssetCarousel key={categoryTitle} title={categoryTitle} assets={assetsForCategory} />;
+                    return <AssetCarousel key={categoryTitle} title={categoryTitle} assets={assetsForCategory} onAssetClick={handleAssetCardClick} />;
                 }
                 return null;
             })}
@@ -411,6 +437,27 @@ export default function Assets() {
             {/* {categorizedAssets['Other Assets'] && categorizedAssets['Other Assets'].length > 0 && (
                 <AssetCarousel title="Other Assets" assets={categorizedAssets['Other Assets']} />
             )} */}
+
+            {/* Transactions for Selected Asset */}
+            {selectedAssetAccountPath && (
+                <div className="mt-8 p-6 bg-white rounded-xl shadow">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-semibold text-gray-800">
+                            Transactions for: {getSelectedAccountDisplayName()}
+                        </h2>
+                        <button
+                            onClick={() => setSelectedAssetAccountPath(null)}
+                            className="text-sm text-blue-600 hover:text-blue-800"
+                            aria-label="Close transactions view"
+                        >
+                            Close
+                        </button>
+                    </div>
+                    <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                        <Transactions initialAccountFilter={selectedAssetAccountPath} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 } 
