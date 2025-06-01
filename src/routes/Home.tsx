@@ -11,6 +11,11 @@ import {
     Globe,
     Server,
 } from "lucide-react"
+import aaronJpeg from "../assets/aaron.jpeg";
+import harveyAiLogoJpeg from "../assets/logos/harvey_ai_logo.jpeg";
+import microsoftLogoPng from "../assets/logos/Microsoft_logo.png";
+import tiedyeLogoJpg from "../assets/logos/tiedye_logo.JPG";
+import whatsappLogoPng from "../assets/logos/whatsapp_logo.png";
 
 export default function Home() {
     return (
@@ -61,7 +66,7 @@ export default function Home() {
                                         </p>
                                     </div>
                                     <img
-                                        src="src/assets/aaron.jpeg"
+                                        src={aaronJpeg}
                                         alt="Aaron Chan Avatar"
                                         className="w-48 h-48 rounded-full object-cover border-4 border-white/20 flex-shrink-0 hidden md:flex"
                                     />
@@ -124,7 +129,7 @@ export default function Home() {
                         <div className="col-span-6 md:col-span-3 row-span-2 bg-white rounded-3xl p-6 flex flex-col justify-center items-center text-center hover:shadow-lg transition-shadow">
                             <div className="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center mb-3">
                                 <img
-                                    src="src/assets/logos/harvey_ai_logo.jpeg"
+                                    src={harveyAiLogoJpeg}
                                     alt="Harvey Logo"
                                     width={30}
                                     height={30}
@@ -139,7 +144,7 @@ export default function Home() {
                         <div className="col-span-6 md:col-span-3 row-span-2 bg-white rounded-3xl p-6 flex flex-col justify-center items-center text-center hover:shadow-lg transition-shadow">
                             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
                                 <img
-                                    src="src/assets/logos/Microsoft_logo.png"
+                                    src={microsoftLogoPng}
                                     alt="Microsoft Research Logo"
                                     width={30}
                                     height={30}
@@ -155,7 +160,7 @@ export default function Home() {
                         <div className="col-span-6 md:col-span-3 row-span-2 bg-white rounded-3xl p-6 flex flex-col justify-center items-center text-center hover:shadow-lg transition-shadow">
                             <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-3">
                                 <img
-                                    src="src/assets/logos/tiedye_logo.JPG"
+                                    src={tiedyeLogoJpg}
                                     alt="Tiedye Logo"
                                     width={30}
                                     height={30}
@@ -170,7 +175,7 @@ export default function Home() {
                         <div className="col-span-6 md:col-span-3 row-span-2 bg-white rounded-3xl p-6 flex flex-col justify-center items-center text-center hover:shadow-lg transition-shadow">
                             <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center mb-3">
                                 <img
-                                    src="src/assets/logos/whatsapp_logo.png"
+                                    src={whatsappLogoPng}
                                     alt="Whatsapp Logo"
                                     width={30}
                                     height={30}
