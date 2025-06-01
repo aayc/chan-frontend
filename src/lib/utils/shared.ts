@@ -1,1 +1,1 @@
-export const API_BASE_URL = 'http://172.202.8.2:8000';
+export const API_BASE_URL = 'https://chan-apps.duckdns.org';
