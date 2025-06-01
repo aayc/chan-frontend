@@ -49,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return (
         <aside className="w-64 bg-white p-5 shadow-lg flex flex-col flex-shrink-0 h-screen sticky top-0 z-10">
             <div>
-                <div className="mb-10 text-2xl font-bold text-green-600 flex items-center">
+                <div className="mb-10 text-2xl font-bold flex items-center">
                     {appIcon}
                     {appName}
                 </div>

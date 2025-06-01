@@ -1,9 +1,7 @@
 import { Contact, Interaction } from '../../types/people';
 import { auth } from '../../firebase';
 import type { User } from 'firebase/auth';
-
-// --- Server API Implementation ---
-const API_BASE_URL = 'http://localhost:8000'; // Replace with your actual API base URL
+import { API_BASE_URL } from '../utils/shared';
 
 // --- Data Store Interface ---
 export interface ContactsAPI {

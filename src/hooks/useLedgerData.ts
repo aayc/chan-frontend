@@ -4,6 +4,7 @@ import { LedgerParser } from '../lib/ledger/parser';
 import { ServerStorageService } from '../lib/ledger/storage';
 import { createAuthTokenGetter } from '../lib/utils/auth';
 import { useAuth } from '../AuthContext';
+import { API_BASE_URL } from '../lib/utils/shared';
 
 interface LedgerData {
     transactions: LedgerTransaction[];
@@ -21,7 +22,7 @@ export const useLedgerData = () => {
             }
 
             const storageService = new ServerStorageService(
-                'http://localhost:8000',
+                API_BASE_URL,
                 new Date().getFullYear(),
                 createAuthTokenGetter(currentUser)
             );

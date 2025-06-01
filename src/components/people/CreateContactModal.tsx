@@ -48,6 +48,7 @@ const getInitialContactData = (): Omit<Contact, 'id'> => ({
     company: '',
     birthday: '', // Store as string
     lastContact: '', // Store as string
+    linkedin: '', // Changed to linkedin
     changelog: [], // Initialize with an empty changelog as it's required
 });
 
@@ -232,6 +233,7 @@ const CreateContactModal: React.FC<CreateContactModalProps> = ({ onClose, onCrea
                     {renderInputField('Company', 'company', 'text', 'Company Name')}
                     {renderInputField('Location', 'location', 'text', 'City, State')}
                     {renderInputField('Avatar URL', 'avatar', 'url', 'https://example.com/avatar.jpg')}
+                    {renderInputField('LinkedIn Profile URL', 'linkedin', 'url', 'https://linkedin.com/in/username')}
                     {renderInputField('Categories (comma-separated)', 'categories', 'text', 'Friend, Work')}
                     {renderInputField('Birthday', 'birthday', 'date')}
                     {renderInputField('Last Contacted', 'lastContact', 'date')}

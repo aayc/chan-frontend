@@ -238,7 +238,7 @@ export default function People() {
                     activeView={activeView}
                     onSignOut={handleSignOut}
                     onNavigate={handleNavigation}
-                    appName="Personal CRM"
+                    appName="People"
                     appIcon={<HiOutlineUserGroup className="text-3xl mr-2 text-blue-500" />}
                 />
                 <div className="flex-1 p-10 flex flex-col overflow-hidden">

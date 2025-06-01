@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Contact } from '../../types/people';
-import { HiOutlineXMark, HiOutlineEnvelope, HiOutlinePhone, HiOutlineMapPin, HiOutlineCalendarDays, HiOutlineBriefcase, HiOutlineUserCircle, HiOutlineClock, HiOutlineTag, HiOutlineCheckCircle } from 'react-icons/hi2';
+import { HiOutlineXMark, HiOutlineEnvelope, HiOutlinePhone, HiOutlineMapPin, HiOutlineCalendarDays, HiOutlineBriefcase, HiOutlineUserCircle, HiOutlineClock, HiOutlineTag, HiOutlineCheckCircle, HiOutlineLink } from 'react-icons/hi2';
 
 interface ContactDetailModalProps {
     contact: Contact;
@@ -198,6 +198,8 @@ const ContactDetailModal: React.FC<ContactDetailModalProps> = ({ contact, onClos
                 <EditableDetailItem icon={HiOutlineEnvelope} label="Email" field="email" value={editableContact.email} onLocalChange={handleLocalUpdate} />
                 <EditableDetailItem icon={HiOutlinePhone} label="Phone" field="phone" value={editableContact.phone} onLocalChange={handleLocalUpdate} />
                 <EditableDetailItem icon={HiOutlineMapPin} label="Location" field="location" value={editableContact.location} onLocalChange={handleLocalUpdate} />
+                <EditableDetailItem icon={HiOutlineUserCircle} label="Avatar URL" field="avatar" value={editableContact.avatar} onLocalChange={handleLocalUpdate} inputType="text" />
+                <EditableDetailItem icon={HiOutlineLink} label="LinkedIn Profile URL" field="linkedin" value={editableContact.linkedin} onLocalChange={handleLocalUpdate} inputType="text" />
                 <EditableDetailItem icon={HiOutlineCalendarDays} label="Birthday" field="birthday" value={editableContact.birthday} onLocalChange={handleLocalUpdate} inputType="date" />
                 <EditableDetailItem icon={HiOutlineClock} label="Last Contact" field="lastContact" value={editableContact.lastContact} onLocalChange={handleLocalUpdate} inputType="date" />
                 <EditableDetailItem icon={HiOutlineTag} label="Categories (comma-separated)" field="categories" value={editableContact.categories} onLocalChange={handleLocalUpdate} />

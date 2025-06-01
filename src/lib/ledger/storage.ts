@@ -1,4 +1,5 @@
 import { StorageService } from './types';
+import { API_BASE_URL } from '../utils/shared';
 
 export class LocalFileStorageService implements StorageService {
     private _lastModified: Date | null = null;
@@ -34,7 +35,7 @@ export class ServerStorageService implements StorageService {
     private _lastModified: Date | null = null;
 
     constructor(
-        private readonly baseUrl: string = 'http://localhost:8000',
+        private readonly baseUrl: string = API_BASE_URL,
         private readonly year: number = new Date().getFullYear(),
         private readonly getAuthToken: () => Promise<string | null>
     ) { }
