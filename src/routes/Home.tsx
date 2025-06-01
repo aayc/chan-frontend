@@ -77,7 +77,7 @@ export default function Home() {
                                             View Projects <ArrowUpRight className="ml-2 h-4 w-4" />
                                         </button>
                                     </a>
-                                    <a href="src/assets/Aaron_Chan_Resume.pdf" download>
+                                    <a href="/Aaron_Chan_Resume.pdf" download>
                                         <button className="bg-white text-violet-600 hover:bg-white/90 px-4 py-2 rounded-md flex items-center">
                                             Download Resume <ArrowUpRight className="ml-2 h-4 w-4" />
                                         </button>
@@ -100,7 +100,7 @@ export default function Home() {
                             <div className="space-y-3">
                                 <div>
                                     <h4 className="font-medium text-gray-800 hover:text-violet-600 text-sm">
-                                        <a href="#">Title of My First Amazing Blog Post</a>
+                                        <a href="#">Title of My First Blog Post</a>
                                     </h4>
                                     <p className="text-xs text-gray-500">Jan 1, 2024</p>
                                 </div>
