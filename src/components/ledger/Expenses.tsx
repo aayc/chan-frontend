@@ -5,7 +5,7 @@ import Popover from '../shared/Popover';
 import Transactions from './Transactions';
 import { useLedgerData } from '../../hooks/useLedgerData';
 import ExpensesSkeleton from '../skeletons/ExpensesSkeleton';
-import { calculateMonthlyExpenses, toTitleCase } from '../../lib/ledger/calculations';
+import { calculateMonthlyExpenses, calculateMonthlyIncome, toTitleCase } from '../../lib/ledger/calculations';
 
 interface ExpenseGroup {
     name: string;
@@ -52,6 +52,8 @@ export default function Expenses() {
 
     const [totalBudget, setTotalBudget] = useState(0);
     const [totalSpent, setTotalSpent] = useState(0);
+    const [totalIncome, setTotalIncome] = useState(0);
+    const [totalSaved, setTotalSaved] = useState(0);
 
     // State for Yearly Expenses & Budgets (dynamic)
     const [yearlyBudgetsDisplay, setYearlyBudgetsDisplay] = useState<ExpenseGroup[]>([]);
@@ -208,6 +210,8 @@ export default function Expenses() {
             setTopSpendCategories([]);
             setTotalBudget(0);
             setTotalSpent(0);
+            setTotalIncome(0);
+            setTotalSaved(0);
             setLoading(false); // Processing finished (nothing to process)
             return;
         }
@@ -226,6 +230,12 @@ export default function Expenses() {
             excludeRent: false, // Don't exclude rent for the main expenses calculation
             budgetedCategoriesOnly: false // Show all categories, not just budgeted ones
         });
+
+        // Calculate monthly income
+        const currentMonthIncome = calculateMonthlyIncome(targetDateForExpenses, currentAllTransactions, true);
+        const monthlyIncomeTotal = Object.values(currentMonthIncome).reduce((sum, amount) => sum + amount, 0);
+        setTotalIncome(monthlyIncomeTotal);
+
         const monthlyBudgetsData = currentAllBudgets.filter(b => b.period === BudgetPeriod.Monthly);
 
         const recurring = monthlyBudgetsData.map(budget => ({
@@ -241,6 +251,10 @@ export default function Expenses() {
         const currentTotalSpent = recurring.reduce((sum, b) => sum + b.spent, 0);
         setTotalBudget(currentTotalBudget);
         setTotalSpent(currentTotalSpent);
+
+        // Calculate total saved (income - total expenses spent)
+        const totalExpensesSpent = Object.values(currentMonthExpenses).reduce((sum, amount) => sum + amount, 0);
+        setTotalSaved(monthlyIncomeTotal - totalExpensesSpent);
 
         // Calculate Top Spend (Top 5 by spent amount)
         const sortedBySpend = [...recurring].sort((a, b) => b.spent - a.spent);
@@ -414,7 +428,8 @@ export default function Expenses() {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                <SummaryCard title="Total Saved" amount={totalSaved} subtext="Income - expenses" />
                 <SummaryCard title="Total Budget" amount={totalBudget} subtext="Monthly allocation" />
                 <SummaryCard title="Total Spent" amount={totalSpent} subtext="This month" />
                 <SummaryCard title="Remaining" amount={remainingBudget} subtext="Available to spend" />

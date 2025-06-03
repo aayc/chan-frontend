@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useLedgerData } from '../../hooks/useLedgerData';
-import { SelectMenu, SelectOption } from '../shared/Select';
+import { MultiSelectMenu, SelectOption } from '../shared/Select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import TrendsSkeleton from '../skeletons/TrendsSkeleton';
 import {
@@ -16,8 +16,14 @@ interface MonthlyDataProcessor {
 }
 
 export default function TrendsPage() {
-    const [selectedYear, setSelectedYear] = useState<string>(() => new Date().getFullYear().toString());
-    const { data, isLoading, error } = useLedgerData(selectedYear ? parseInt(selectedYear) : undefined);
+    const [selectedYears, setSelectedYears] = useState<string[]>([new Date().getFullYear().toString()]);
+    const [showIncomeTotal, setShowIncomeTotal] = useState<boolean>(false);
+    const [showExpenseTotal, setShowExpenseTotal] = useState<boolean>(false);
+    const [showCumulative, setShowCumulative] = useState<boolean>(false);
+
+    // For multi-year data, we'll fetch data for the earliest year to get all transactions
+    const minYear = selectedYears.length > 0 ? Math.min(...selectedYears.map(y => parseInt(y))) : new Date().getFullYear();
+    const { data, isLoading, error } = useLedgerData(minYear);
 
     const allTransactions = data?.transactions ?? [];
     const allBudgets = data?.budgets ?? [];
@@ -39,10 +45,10 @@ export default function TrendsPage() {
             });
         }
 
-        // Ensure current selectedYear is an option
-        if (selectedYear) {
-            years.add(selectedYear);
-        }
+        // Ensure current selectedYears are options
+        selectedYears.forEach(year => {
+            years.add(year);
+        });
 
         return Array.from(years)
             .sort((a, b) => b.localeCompare(a)) // Sort descending
@@ -50,22 +56,46 @@ export default function TrendsPage() {
                 value: year,
                 label: year
             }));
-    }, [allTransactions, selectedYear]);
+    }, [allTransactions, selectedYears]);
+
+    // Helper function to apply cumulative calculation
+    const applyCumulative = (data: MonthlyTrendData[], keys: string[]): MonthlyTrendData[] => {
+        const cumulativeData: MonthlyTrendData[] = [];
+        const runningTotals: Record<string, number> = {};
+
+        // Initialize running totals
+        keys.forEach(key => {
+            runningTotals[key] = 0;
+        });
+
+        data.forEach(monthData => {
+            const entry: MonthlyTrendData = { month: monthData.month };
+
+            keys.forEach(key => {
+                runningTotals[key] += Number(monthData[key]) || 0;
+                entry[key] = runningTotals[key];
+            });
+
+            cumulativeData.push(entry);
+        });
+
+        return cumulativeData;
+    };
 
     const processedChartData = useMemo(() => {
-        if (!selectedYear || allTransactions.length === 0) {
+        if (selectedYears.length === 0 || allTransactions.length === 0) {
             return { incomeData: [], expenseData: [], incomeKeys: [], expenseKeys: [] };
         }
 
-        const yearNum = parseInt(selectedYear);
+        const yearNums = selectedYears.map(y => parseInt(y)).sort((a, b) => a - b); // Sort years ascending
         const budgetedCategories = getBudgetedCategories(allBudgets);
 
-        // Filter transactions for the selected year
+        // Filter transactions for the selected years
         const yearTransactions = allTransactions.filter(t =>
-            t.date.getFullYear() === yearNum
+            yearNums.includes(t.date.getFullYear())
         );
 
-        // Process income data by month
+        // Process income data by month and year
         const incomeProcessor: MonthlyDataProcessor = (transactions, monthIndex) => {
             const monthTransactions = transactions.filter(t =>
                 t.date.getMonth() === monthIndex
@@ -73,7 +103,7 @@ export default function TrendsPage() {
             return processIncomeTransactions(monthTransactions, true); // filter joint only
         };
 
-        // Process expense data by month  
+        // Process expense data by month and year
         const expenseProcessor: MonthlyDataProcessor = (transactions, monthIndex) => {
             const monthTransactions = transactions.filter(t =>
                 t.date.getMonth() === monthIndex
@@ -86,67 +116,136 @@ export default function TrendsPage() {
             });
         };
 
-        // Build monthly data for both income and expenses
+        // Build continuous monthly data across selected years
         const incomeCategories = new Set<string>();
         const expenseCategories = new Set<string>();
-        const monthlyDataMap: Record<number, { income: Record<string, number>; expenses: Record<string, number> }> = {};
+        const continuousMonthlyData: Record<string, { income: Record<string, number>; expenses: Record<string, number> }> = {};
 
-        // Process each month
-        for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
-            const incomeData = incomeProcessor(yearTransactions, monthIndex);
-            const expenseData = expenseProcessor(yearTransactions, monthIndex);
+        // Process each year and month to build continuous data
+        yearNums.forEach(year => {
+            const yearSpecificTransactions = yearTransactions.filter(t => t.date.getFullYear() === year);
 
-            monthlyDataMap[monthIndex] = { income: incomeData, expenses: expenseData };
+            for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+                const incomeData = incomeProcessor(yearSpecificTransactions, monthIndex);
+                const expenseData = expenseProcessor(yearSpecificTransactions, monthIndex);
 
-            // Collect categories
-            Object.keys(incomeData).forEach(cat => incomeCategories.add(cat));
-            Object.keys(expenseData).forEach(cat => expenseCategories.add(cat));
-        }
+                // Create a unique key for year-month combination
+                const monthKey = `${year}-${monthIndex.toString().padStart(2, '0')}`;
+                continuousMonthlyData[monthKey] = { income: incomeData, expenses: expenseData };
 
-        // Helper to get month name
-        const getMonthName = (monthNumber: number): string => {
+                // Collect categories for selected years
+                Object.keys(incomeData).forEach(cat => incomeCategories.add(cat));
+                Object.keys(expenseData).forEach(cat => expenseCategories.add(cat));
+            }
+        });
+
+        // Calculate averages for income categories across selected years to get top 5
+        const incomeAverages: Record<string, number> = {};
+        const totalSelectedMonths = yearNums.length * 12;
+
+        Array.from(incomeCategories).forEach(category => {
+            let total = 0;
+            let monthsWithData = 0;
+
+            yearNums.forEach(year => {
+                const yearSpecificTransactions = yearTransactions.filter(t => t.date.getFullYear() === year);
+
+                for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+                    const monthTransactions = yearSpecificTransactions.filter(t => t.date.getMonth() === monthIndex);
+                    const incomeData = processIncomeTransactions(monthTransactions, true);
+                    if (incomeData[category]) {
+                        total += incomeData[category];
+                        monthsWithData++;
+                    }
+                }
+            });
+
+            // Calculate average for selected time period
+            incomeAverages[category] = monthsWithData > 0 ? total / totalSelectedMonths : 0;
+        });
+
+        // Get top 5 income categories by average for selected years
+        const top5IncomeKeys = Object.entries(incomeAverages)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 5)
+            .map(([category]) => category);
+
+        // Helper to get month-year label
+        const getMonthYearLabel = (year: number, monthNumber: number): string => {
             const date = new Date();
+            date.setFullYear(year);
             date.setMonth(monthNumber);
-            return date.toLocaleString('en-US', { month: 'short' });
+            return date.toLocaleString('en-US', { month: 'short', year: '2-digit' });
         };
 
-        // Build chart data
+        // Build continuous chart data
         const chartData: MonthlyTrendData[] = [];
-        for (let i = 0; i < 12; i++) {
-            const monthEntry: MonthlyTrendData = { month: getMonthName(i) };
-            const monthData = monthlyDataMap[i] || { income: {}, expenses: {} };
 
-            // Add income data
-            incomeCategories.forEach(category => {
-                monthEntry[category] = monthData.income[category] || 0;
-            });
+        yearNums.forEach(year => {
+            for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+                const monthKey = `${year}-${monthIndex.toString().padStart(2, '0')}`;
+                const monthData = continuousMonthlyData[monthKey] || { income: {}, expenses: {} };
 
-            // Add expense data
-            expenseCategories.forEach(category => {
-                monthEntry[category] = monthData.expenses[category] || 0;
-            });
+                const monthEntry: MonthlyTrendData = {
+                    month: getMonthYearLabel(year, monthIndex)
+                };
 
-            chartData.push(monthEntry);
-        }
+                // Add income data for top 5 categories only
+                top5IncomeKeys.forEach(category => {
+                    monthEntry[category] = monthData.income[category] || 0;
+                });
 
-        const sortedIncomeKeys = Array.from(incomeCategories).sort();
+                // Add expense data
+                expenseCategories.forEach(category => {
+                    monthEntry[category] = monthData.expenses[category] || 0;
+                });
+
+                chartData.push(monthEntry);
+            }
+        });
+
         const sortedExpenseKeys = Array.from(expenseCategories).sort();
 
+        // Build final data with totals
+        const incomeDataWithTotals = chartData.map(m => {
+            const entry: MonthlyTrendData = { month: m.month };
+            let total = 0;
+
+            top5IncomeKeys.forEach(k => {
+                const value = Number(m[k]) || 0;
+                entry[k] = value;
+                total += value;
+            });
+
+            entry['Total Income'] = total;
+            return entry;
+        });
+
+        const expenseDataWithTotals = chartData.map(m => {
+            const entry: MonthlyTrendData = { month: m.month };
+            let total = 0;
+
+            sortedExpenseKeys.forEach(k => {
+                const value = Number(m[k]) || 0;
+                entry[k] = value;
+                total += value;
+            });
+
+            entry['Total Expenses'] = total;
+            return entry;
+        });
+
+        // Apply cumulative calculation if enabled
+        const processedIncomeData = showCumulative ? applyCumulative(incomeDataWithTotals, [...top5IncomeKeys, 'Total Income']) : incomeDataWithTotals;
+        const processedExpenseData = showCumulative ? applyCumulative(expenseDataWithTotals, [...sortedExpenseKeys, 'Total Expenses']) : expenseDataWithTotals;
+
         return {
-            incomeData: chartData.map(m => {
-                const entry: MonthlyTrendData = { month: m.month };
-                sortedIncomeKeys.forEach(k => entry[k] = m[k] || 0);
-                return entry;
-            }),
-            expenseData: chartData.map(m => {
-                const entry: MonthlyTrendData = { month: m.month };
-                sortedExpenseKeys.forEach(k => entry[k] = m[k] || 0);
-                return entry;
-            }),
-            incomeKeys: sortedIncomeKeys,
+            incomeData: processedIncomeData,
+            expenseData: processedExpenseData,
+            incomeKeys: top5IncomeKeys,
             expenseKeys: sortedExpenseKeys
         };
-    }, [selectedYear, allTransactions, allBudgets]);
+    }, [selectedYears, allTransactions, allBudgets, showCumulative]);
 
     const lineColors = [
         '#1f77b4',  // muted blue
@@ -181,28 +280,83 @@ export default function TrendsPage() {
 
     const renderChart = (title: string, data: MonthlyTrendData[], keys: string[], type: 'Income' | 'Expense') => {
         if (keys.length === 0) {
-            return <p className="text-gray-500 mt-4">No {type.toLowerCase()} data available for {selectedYear}.</p>;
+            return <p className="text-gray-500 mt-4">No {type.toLowerCase()} data available for selected years.</p>;
         }
+
+        const showTotal = type === 'Income' ? showIncomeTotal : showExpenseTotal;
+        const setShowTotal = type === 'Income' ? setShowIncomeTotal : setShowExpenseTotal;
+
+        const totalKey = type === 'Income' ? 'Total Income' : 'Total Expenses';
+        const allKeys = showTotal ? [...keys, totalKey] : keys;
+
+        // Create a readable year range for the title
+        const yearNums = selectedYears.map(y => parseInt(y)).sort((a, b) => a - b);
+        const yearsText = yearNums.length === 1
+            ? yearNums[0].toString()
+            : `${yearNums[0]} - ${yearNums[yearNums.length - 1]}`;
+
+        // Add cumulative indicator to title
+        const titleSuffix = showCumulative ? ' (Cumulative)' : '';
+        const fullTitle = `${title}${titleSuffix} - ${yearsText}`;
+
         return (
             <div className="mb-12 p-6 bg-white rounded-xl shadow">
-                <h2 className="text-xl font-semibold mb-6 text-gray-800">{title} - {selectedYear}</h2>
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-semibold text-gray-800">{fullTitle}</h2>
+                    <div className="flex items-center space-x-4">
+                        {type === 'Income' && (
+                            <label className="flex items-center space-x-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={showCumulative}
+                                    onChange={(e) => setShowCumulative(e.target.checked)}
+                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                />
+                                <span className="text-sm font-medium text-gray-700">Cumulative</span>
+                            </label>
+                        )}
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={showTotal}
+                                onChange={(e) => setShowTotal(e.target.checked)}
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                            />
+                            <span className="text-sm font-medium text-gray-700">Show {totalKey}</span>
+                        </label>
+                    </div>
+                </div>
+                {type === 'Income' && (
+                    <p className="text-sm text-gray-500 mb-4">Showing top 5 income categories by average</p>
+                )}
                 <ResponsiveContainer width="100%" height={600}>
                     <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
+                        <XAxis
+                            dataKey="month"
+                            angle={-45}
+                            textAnchor="end"
+                            height={80}
+                            interval={selectedYears.length > 1 ? 2 : 0}
+                        />
                         <YAxis />
                         <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
                         <Legend />
-                        {keys.map((key, index) => (
-                            <Line
-                                key={key}
-                                type="monotone"
-                                dataKey={key}
-                                name={toTitleCase(key)}
-                                stroke={lineColors[index % lineColors.length]}
-                                activeDot={{ r: 8 }}
-                            />
-                        ))}
+                        {allKeys.map((key, index) => {
+                            const isTotal = key === totalKey;
+                            return (
+                                <Line
+                                    key={key}
+                                    type="monotone"
+                                    dataKey={key}
+                                    name={toTitleCase(key)}
+                                    stroke={isTotal ? '#000000' : lineColors[index % lineColors.length]}
+                                    strokeWidth={isTotal ? 3 : 2}
+                                    strokeDasharray={isTotal ? "5 5" : undefined}
+                                    activeDot={{ r: 8 }}
+                                />
+                            );
+                        })}
                     </LineChart>
                 </ResponsiveContainer>
             </div>
@@ -214,12 +368,12 @@ export default function TrendsPage() {
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-semibold text-gray-800">Financial Trends</h3>
                 {yearOptions.length > 0 && (
-                    <div className="w-48">
-                        <SelectMenu
-                            value={selectedYear}
-                            onValueChange={setSelectedYear}
+                    <div className="w-64">
+                        <MultiSelectMenu
+                            values={selectedYears}
+                            onValuesChange={setSelectedYears}
                             options={yearOptions}
-                            placeholder="Select Year"
+                            placeholder="Select Years"
                         />
                     </div>
                 )}
@@ -228,11 +382,11 @@ export default function TrendsPage() {
             {allTransactions.length === 0 && !isLoading && (
                 <div className="bg-white p-6 rounded-xl shadow text-center">
                     <p className="text-gray-600">No transaction data available to display trends.</p>
-                    {selectedYear && <p className="text-sm text-gray-500 mt-1">Selected year: {selectedYear}</p>}
+                    {selectedYears.length > 0 && <p className="text-sm text-gray-500 mt-1">Selected years: {selectedYears.join(', ')}</p>}
                 </div>
             )}
 
-            {allTransactions.length > 0 && (
+            {allTransactions.length > 0 && selectedYears.length > 0 && (
                 <>
                     {renderChart("Income Over Time", incomeData, incomeKeys, 'Income')}
                     {renderChart("Expenses Over Time", expenseData, expenseKeys, 'Expense')}
