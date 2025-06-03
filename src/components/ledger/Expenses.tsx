@@ -5,6 +5,7 @@ import Popover from '../shared/Popover';
 import Transactions from './Transactions';
 import { useLedgerData } from '../../hooks/useLedgerData';
 import ExpensesSkeleton from '../skeletons/ExpensesSkeleton';
+import { calculateMonthlyExpenses, toTitleCase } from '../../lib/ledger/calculations';
 
 interface ExpenseGroup {
     name: string;
@@ -39,15 +40,10 @@ const getCategoryColor = (categoryName: string) => {
     return categoryColors[categoryName] || categoryColors['Default'];
 }
 
-// Helper function for Title Case
-const toTitleCase = (str: string): string => {
-    if (!str) return '';
-    // A more robust title case for things like "food & dining"
-    return str.toLowerCase().replace(/\b(\w)/g, s => s.toUpperCase()).replace(/& (\w)/g, (match, p1) => `& ${p1.toUpperCase()}`);
-};
-
 export default function Expenses() {
-    const { data, isLoading, error } = useLedgerData();
+    const [currentDisplayYear, setCurrentDisplayYear] = useState<string>(''); // "YYYY"
+
+    const { data, isLoading, error } = useLedgerData(currentDisplayYear ? parseInt(currentDisplayYear) : undefined);
     const allTransactions = data?.transactions ?? [];
     const allBudgets = data?.budgets ?? [];
 
@@ -66,56 +62,171 @@ export default function Expenses() {
     const [activePopoverCategory, setActivePopoverCategory] = useState<string | null>(null);
     const [activeYearlyPopoverCategory, setActiveYearlyPopoverCategory] = useState<string | null>(null);
 
-    const [selectedMonth, setSelectedMonth] = useState<string>(() => {
-        const today = new Date();
-        return `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`;
-    });
+    // selectedMonth is the source of truth for filtering, format "YYYY-MM"
+    const [selectedMonth, setSelectedMonth] = useState<string>('');
 
-    const uniqueMonthsForDropdown = useMemo(() => {
+    const sortedUniqueYearMonths = useMemo(() => {
         if (allTransactions.length === 0) return [];
         const monthsSet = new Set<string>();
         allTransactions.forEach(t => {
             const monthYear = `${t.date.getFullYear()}-${(t.date.getMonth() + 1).toString().padStart(2, '0')}`;
             monthsSet.add(monthYear);
         });
-        const sortedMonthKeys = Array.from(monthsSet).sort((a, b) => b.localeCompare(a));
-        return sortedMonthKeys.map(monthStr => ({
-            value: monthStr,
-            label: new Date(parseInt(monthStr.split('-')[0]), parseInt(monthStr.split('-')[1]) - 1).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
-        }));
+        return Array.from(monthsSet).sort((a, b) => b.localeCompare(a)); // Sorts descending, "2023-12" before "2023-11"
     }, [allTransactions]);
 
+    // Effect to initialize selectedMonth and currentDisplayYear, and keep them in sync.
     useEffect(() => {
-        if (allTransactions.length === 0 || allBudgets.length === 0) {
-            // Don't process until data is loaded
-            if (!isLoading && allTransactions.length > 0 && allBudgets.length > 0) setLoading(false);
+        // If selectedMonth is not set, initialize it.
+        if (!selectedMonth) {
+            if (sortedUniqueYearMonths.length > 0) {
+                const latestMonthYear = sortedUniqueYearMonths[0]; // sorted data is descending
+                setSelectedMonth(latestMonthYear);
+                setCurrentDisplayYear(latestMonthYear.split('-')[0]);
+            } else {
+                // No transactions to derive from, default to current system month/year
+                const today = new Date();
+                const year = today.getFullYear().toString();
+                const month = (today.getMonth() + 1).toString().padStart(2, '0');
+                setSelectedMonth(`${year}-${month}`);
+                setCurrentDisplayYear(year);
+            }
+        } else {
+            // selectedMonth is set. Ensure currentDisplayYear matches its year part.
+            // This handles syncing currentDisplayYear if selectedMonth was changed by other means
+            // or if currentDisplayYear didn't update immediately with selectedMonth.
+            const yearFromSelectedMonth = selectedMonth.split('-')[0];
+            if (yearFromSelectedMonth !== currentDisplayYear) {
+                setCurrentDisplayYear(yearFromSelectedMonth);
+            }
+            // Optional: Future logic could go here to reset selectedMonth if it becomes truly invalid
+            // (e.g., the month-year combo is no longer possible with current filters/data), 
+            // but for now, we trust handleYearChange/handleMonthChange and the dropdown options.
+        }
+    }, [selectedMonth, sortedUniqueYearMonths, currentDisplayYear]); // Dependencies
+
+
+    const yearOptions = useMemo<SelectOption[]>(() => {
+        const years = new Set<string>();
+
+        // Add the fixed range of years
+        for (let i = 2025; i >= 2020; i--) {
+            years.add(i.toString());
+        }
+
+        // Add years from transactions
+        sortedUniqueYearMonths.forEach(ym => {
+            years.add(ym.split('-')[0]);
+        });
+
+        // Ensure currentDisplayYear is an option, especially if it's based on current system time and no transactions yet
+        if (currentDisplayYear && currentDisplayYear !== '') {
+            years.add(currentDisplayYear);
+        }
+
+        // If, after all this, the set is somehow empty (e.g., currentDisplayYear was also empty),
+        // add current system year as a last resort. (This is highly defensive and might be unnecessary given fixed years)
+        if (years.size === 0) {
+            years.add(new Date().getFullYear().toString());
+        }
+
+        return Array.from(years)
+            .sort((a, b) => b.localeCompare(a)) // Sort descending "2025", "2024", ...
+            .map(year => ({
+                value: year,
+                label: year
+            }));
+    }, [sortedUniqueYearMonths, currentDisplayYear]);
+
+    const monthOptions = useMemo<SelectOption[]>(() => {
+        if (!currentDisplayYear) return [];
+        const monthsForSelectedYear = sortedUniqueYearMonths
+            .filter(ym => ym.startsWith(currentDisplayYear + '-'))
+            .map(ym => {
+                const monthNum = parseInt(ym.split('-')[1]);
+                return {
+                    value: monthNum.toString().padStart(2, '0'), // "01", "02", ... "12"
+                    label: new Date(parseInt(currentDisplayYear), monthNum - 1).toLocaleDateString('en-US', { month: 'long' })
+                };
+            });
+        // If no transactions for currentDisplayYear, but we have a currentDisplayYear (e.g. from initial load)
+        // provide all months for that year.
+        if (monthsForSelectedYear.length === 0 && currentDisplayYear) {
+            return Array.from({ length: 12 }, (_, i) => ({
+                value: (i + 1).toString().padStart(2, '0'),
+                label: new Date(parseInt(currentDisplayYear), i).toLocaleDateString('en-US', { month: 'long' })
+            }));
+        }
+        return monthsForSelectedYear;
+    }, [sortedUniqueYearMonths, currentDisplayYear]);
+
+
+    const handleYearChange = (newYear: string) => {
+        // Preserve the current month when changing the year.
+        // selectedMonth is "YYYY-MM". currentMonthPadded will be "MM".
+        const currentMonthPadded = selectedMonth ? selectedMonth.split('-')[1] : '01'; // Default to January if selectedMonth is somehow not set
+        setCurrentDisplayYear(newYear);
+        setSelectedMonth(`${newYear}-${currentMonthPadded}`);
+    };
+
+    const handleMonthChange = (newMonthPadded: string) => { // newMonthPadded is "01", "02" etc.
+        if (currentDisplayYear) {
+            setSelectedMonth(`${currentDisplayYear}-${newMonthPadded}`);
+        }
+    };
+
+    // Derived state for the month dropdown's value, e.g., "01", "12"
+    const selectedMonthValueForDropdown = useMemo(() => {
+        if (!selectedMonth) return '';
+        return selectedMonth.split('-')[1] || '';
+    }, [selectedMonth]);
+
+    useEffect(() => {
+        if (!selectedMonth) {
+            // Not yet initialized, or an invalid state we shouldn't process.
+            // Ensure loading is false if we bail here to prevent stuck skeleton.
+            // setLoading(false); // Consider if this is needed or if skeleton handles it.
             return;
         }
+
+        // isLoading is from useLedgerData for the currentDisplayYear
+        if (isLoading) {
+            setLoading(true); // Sync local processing loader with data fetching loader
+            return; // Wait for data to finish loading
+        }
+
+        // At this point, isLoading is false. Data fetching for currentDisplayYear is complete.
+        // setLoading(true) here would mean we are starting client-side processing.
+        // The original code set it here, so we maintain that pattern.
         setLoading(true);
+
+        if (!data || (data.transactions.length === 0 && data.budgets.length === 0)) {
+            // Data loaded, but it's empty for the selected period.
+            setMonthlyBudgetsDisplay([]);
+            setYearlyBudgetsDisplay([]);
+            setTrendCategories([]);
+            setTopSpendCategories([]);
+            setTotalBudget(0);
+            setTotalSpent(0);
+            setLoading(false); // Processing finished (nothing to process)
+            return;
+        }
+
+        // allTransactions and allBudgets are derived from `data` in the render body.
+        // They will be up-to-date here if `data` is.
+        const currentAllTransactions = data.transactions;
+        const currentAllBudgets = data.budgets;
 
         const [year, month] = selectedMonth.split('-').map(Number);
         const targetDateForExpenses = new Date(year, month - 1);
         const targetYear = targetDateForExpenses.getFullYear();
 
-        const calculateMonthlyExpenses = (targetDate: Date, currentTransactions: LedgerTransaction[]): Record<string, number> => {
-            const monthly: Record<string, number> = {};
-            for (const transaction of currentTransactions) {
-                if (transaction.date.getFullYear() === targetDate.getFullYear() &&
-                    transaction.date.getMonth() === targetDate.getMonth()) {
-                    for (const posting of transaction.postings) {
-                        const expenseAccountMatch = posting.account.match(/(?:[^:]+:)?expenses:([^;]+)/);
-                        if (posting.amount !== null && expenseAccountMatch && posting.account.startsWith('joint:')) {
-                            const category = expenseAccountMatch[1];
-                            monthly[category] = (monthly[category] || 0) + posting.amount;
-                        }
-                    }
-                }
-            }
-            return monthly;
-        };
-
-        const currentMonthExpenses = calculateMonthlyExpenses(targetDateForExpenses, allTransactions);
-        const monthlyBudgetsData = allBudgets.filter(b => b.period === BudgetPeriod.Monthly);
+        const currentMonthExpenses = calculateMonthlyExpenses(targetDateForExpenses, currentAllTransactions, {
+            filterJointOnly: true,
+            excludeRent: false, // Don't exclude rent for the main expenses calculation
+            budgetedCategoriesOnly: false // Show all categories, not just budgeted ones
+        });
+        const monthlyBudgetsData = currentAllBudgets.filter(b => b.period === BudgetPeriod.Monthly);
 
         const recurring = monthlyBudgetsData.map(budget => ({
             name: toTitleCase(budget.formattedCategory),
@@ -141,7 +252,7 @@ export default function Expenses() {
         const previousMonthYearKeys = new Set<string>();
         const firstDayOfSelectedMonth = new Date(year, month - 1, 1); // year, month are from selectedMonth
 
-        for (const transaction of allTransactions) {
+        for (const transaction of currentAllTransactions) {
             if (transaction.date < firstDayOfSelectedMonth) {
                 const transactionMonthYear = `${transaction.date.getFullYear()}-${(transaction.date.getMonth() + 1).toString().padStart(2, '0')}`;
                 previousMonthYearKeys.add(transactionMonthYear);
@@ -212,7 +323,7 @@ export default function Expenses() {
         }));
 
         // Calculate and set dynamic Yearly Budgets and Spent
-        const yearlyBudgetsData = allBudgets.filter(b => b.period === BudgetPeriod.Yearly);
+        const yearlyBudgetsData = currentAllBudgets.filter(b => b.period === BudgetPeriod.Yearly);
         const dynamicYearlyDisplay: ExpenseGroup[] = [];
 
         for (const budget of yearlyBudgetsData) {
@@ -220,7 +331,7 @@ export default function Expenses() {
             const categoryKey = budget.formattedCategory;
             const accountToTrack = `joint:expenses:${categoryKey}`;
 
-            for (const transaction of allTransactions) {
+            for (const transaction of currentAllTransactions) {
                 if (transaction.date.getFullYear() === targetYear) {
                     for (const posting of transaction.postings) {
                         if (posting.amount !== null && posting.account.startsWith(accountToTrack)) {
@@ -241,7 +352,7 @@ export default function Expenses() {
 
         setLoading(false);
 
-    }, [selectedMonth, allTransactions, allBudgets]);
+    }, [selectedMonth, data, isLoading]); // Updated dependencies
 
     if (isLoading && monthlyBudgetsDisplay.length === 0) {
         return <ExpensesSkeleton />;
@@ -284,13 +395,21 @@ export default function Expenses() {
 
     return (
         <div className="space-y-8">
-            <div className="flex justify-end mb-6 h-10 items-center">
-                {uniqueMonthsForDropdown.length > 0 && (
+            <div className="flex justify-end mb-6 h-10 items-center space-x-2">
+                {yearOptions.length > 0 && (
                     <SelectMenu
-                        value={selectedMonth}
-                        onValueChange={setSelectedMonth}
-                        options={uniqueMonthsForDropdown}
-                        placeholder="Select Month"
+                        value={currentDisplayYear}
+                        onValueChange={handleYearChange}
+                        options={yearOptions}
+                        placeholder="Year"
+                    />
+                )}
+                {monthOptions.length > 0 && (
+                    <SelectMenu
+                        value={selectedMonthValueForDropdown}
+                        onValueChange={handleMonthChange}
+                        options={monthOptions}
+                        placeholder="Month"
                     />
                 )}
             </div>

@@ -11,11 +11,13 @@ interface LedgerData {
     budgets: Budget[];
 }
 
-export const useLedgerData = () => {
+export const useLedgerData = (year?: number) => {
     const { currentUser } = useAuth();
+    const currentYear = new Date().getFullYear();
+    const targetYear = year || currentYear;
 
     return useQuery({
-        queryKey: ['ledger-data', currentUser?.uid],
+        queryKey: ['ledger-data', currentUser?.uid, targetYear],
         queryFn: async (): Promise<LedgerData> => {
             if (!currentUser) {
                 throw new Error('User not authenticated');
@@ -23,7 +25,7 @@ export const useLedgerData = () => {
 
             const storageService = new ServerStorageService(
                 API_BASE_URL,
-                new Date().getFullYear(),
+                targetYear,
                 createAuthTokenGetter(currentUser)
             );
 
@@ -45,16 +47,16 @@ export const useLedgerData = () => {
 };
 
 // Convenience hooks for specific data
-export const useLedgerTransactions = () => {
-    const { data, ...rest } = useLedgerData();
+export const useLedgerTransactions = (year?: number) => {
+    const { data, ...rest } = useLedgerData(year);
     return {
         transactions: data?.transactions ?? [],
         ...rest
     };
 };
 
-export const useLedgerBudgets = () => {
-    const { data, ...rest } = useLedgerData();
+export const useLedgerBudgets = (year?: number) => {
+    const { data, ...rest } = useLedgerData(year);
     return {
         budgets: data?.budgets ?? [],
         ...rest

@@ -15,6 +15,7 @@ export default function LedgerRouteContent() {
         if (path.includes('/assets')) return 'assets';
         if (path.includes('/income')) return 'income';
         if (path.includes('/people')) return 'people';
+        if (path.includes('/trends')) return 'trends';
         return null;
     };
 
@@ -44,8 +45,8 @@ export default function LedgerRouteContent() {
                 onSignOut={handleSignOut}
                 onNavigate={handleNavigation}
             />
-            <div className="flex-1 flex justify-center items-start overflow-y-auto h-screen">
-                <main className="max-w-5xl w-full p-8">
+            <div className="flex-1 overflow-y-auto h-screen">
+                <main className="w-full p-8">
                     <Outlet />
                 </main>
             </div>

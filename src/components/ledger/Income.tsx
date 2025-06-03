@@ -2,6 +2,13 @@ import { useEffect, useState, useMemo } from 'react';
 import Popover from '../shared/Popover';
 import { useLedgerTransactions } from '../../hooks/useLedgerData';
 import IncomeSkeleton from '../skeletons/IncomeSkeleton';
+import {
+    processIncomeTransactions,
+    filterTransactionsByMonth,
+    toTitleCase,
+    getUniqueMonthsFromTransactions,
+    calculateIncomeAmount
+} from '../../lib/ledger/calculations';
 
 interface IncomeEntry {
     id: string; // Can be date + description hash or similar for uniqueness
@@ -15,12 +22,6 @@ interface IncomeCategory {
     name: string;
     value: number;
 }
-
-// Helper function for Title Case (can be moved to a shared utils file)
-const toTitleCase = (str: string): string => {
-    if (!str) return '';
-    return str.toLowerCase().replace(/\b(\w)/g, s => s.toUpperCase());
-};
 
 // Custom label renderer for the Pie chart
 const RADIAN = Math.PI / 180;
@@ -69,27 +70,7 @@ export default function Income() {
     const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
 
     const uniqueMonthsForFilter = useMemo(() => {
-        if (allLedgerTransactions.length === 0) return [];
-        const months = new Set<string>();
-        allLedgerTransactions.forEach(t => {
-            // Iterate through postings to find joint:income to ensure month is relevant to income
-            let hasIncomeInMonth = false;
-            for (const p of t.postings) {
-                if (p.account.startsWith('joint:income:')) {
-                    hasIncomeInMonth = true;
-                    break;
-                }
-            }
-            if (hasIncomeInMonth) {
-                const monthYear = `${t.date.getFullYear()}-${(t.date.getMonth() + 1).toString().padStart(2, '0')}`;
-                months.add(monthYear);
-            }
-        });
-        return Array.from(months).sort((a, b) => b.localeCompare(a)) // Sort newest first
-            .map(monthStr => ({
-                value: monthStr,
-                label: new Date(parseInt(monthStr.split('-')[0]), parseInt(monthStr.split('-')[1]) - 1).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
-            }));
+        return getUniqueMonthsFromTransactions(allLedgerTransactions, 'joint:income:');
     }, [allLedgerTransactions]);
 
     const handleMonthToggle = (month: string) => {
@@ -113,38 +94,19 @@ export default function Income() {
 
         setLoading(true);
 
-        // Filter transactions by selected months first
-        const monthFilteredTransactions = selectedMonths.length === 0
-            ? allLedgerTransactions
-            : allLedgerTransactions.filter(transaction => {
-                const transactionMonthYear = `${transaction.date.getFullYear()}-${(transaction.date.getMonth() + 1).toString().padStart(2, '0')}`;
-                return selectedMonths.includes(transactionMonthYear);
-            });
+        // Filter transactions by selected months using shared utility
+        const monthFilteredTransactions = filterTransactionsByMonth(allLedgerTransactions, selectedMonths);
 
+        // Process income data using shared utility
+        const incomeCategories = processIncomeTransactions(monthFilteredTransactions, true);
+
+        // Build table entries
         const processedIncomeEntries: IncomeEntry[] = [];
-        const incomeCategories: Record<string, number> = {};
-
         monthFilteredTransactions.forEach((transaction, txIndex) => {
             transaction.postings.forEach((posting, pIndex) => {
                 if (posting.account.startsWith('joint:income:')) {
-                    let incomeAmount: number | null = null;
-
-                    if (posting.amount && posting.amount < 0) {
-                        incomeAmount = Math.abs(posting.amount);
-                    } else if (posting.amount === null || posting.amount === 0) {
-                        // Calculate implicit amount if it's null or zero
-                        let sumOfOtherPostings = 0;
-                        transaction.postings.forEach(otherPosting => {
-                            if (otherPosting !== posting && otherPosting.amount !== null) {
-                                sumOfOtherPostings += otherPosting.amount;
-                            }
-                        });
-                        // The income posting balances the sum of others.
-                        // If others sum to X, income is -X. We need the absolute value.
-                        if (sumOfOtherPostings !== 0) { // ensure there are other amounts to balance against
-                            incomeAmount = Math.abs(sumOfOtherPostings);
-                        }
-                    }
+                    // Use shared utility to calculate income amount
+                    const incomeAmount = calculateIncomeAmount(posting, transaction);
 
                     if (incomeAmount !== null && incomeAmount > 0) {
                         const category = posting.account.split(':')[2] || 'Unknown';
@@ -155,7 +117,6 @@ export default function Income() {
                             category: toTitleCase(category),
                             amount: incomeAmount,
                         });
-                        incomeCategories[category] = (incomeCategories[category] || 0) + incomeAmount;
                     }
                 }
             });
@@ -165,6 +126,7 @@ export default function Income() {
         processedIncomeEntries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         setIncomeTableData(processedIncomeEntries);
 
+        // Convert income categories to sorted pie chart data
         const sortedCategories = Object.entries(incomeCategories)
             .map(([name, value]) => ({ name: toTitleCase(name), value }))
             .sort((a, b) => b.value - a.value);

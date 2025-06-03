@@ -80,6 +80,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             icon={<HiOutlineBanknotes />}
                         />
                         <SidebarItem
+                            title="Trends"
+                            isActive={activeView === 'trends'}
+                            onClick={() => onNavigate('trends')}
+                            icon={<HiOutlineChartBarSquare />}
+                        />
+                        <SidebarItem
                             title="People"
                             isActive={activeView === 'people'}
                             onClick={() => onNavigate('people')}

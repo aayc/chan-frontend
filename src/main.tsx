@@ -13,6 +13,7 @@ import Expenses from './components/ledger/Expenses';
 import Transactions from './components/ledger/Transactions';
 import Assets from './components/ledger/Assets';
 import Income from './components/ledger/Income';
+import TrendsPage from './components/ledger/Trends';
 import Login from './routes/Login';
 import ProtectedRoute from './routes/ProtectedRoute';
 import People from './routes/People';
@@ -67,6 +68,10 @@ const router = createBrowserRouter([
                             {
                                 path: 'income',
                                 element: <Income />,
+                            },
+                            {
+                                path: 'trends',
+                                element: <TrendsPage />,
                             },
                         ],
                     },
