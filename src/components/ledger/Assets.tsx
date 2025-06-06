@@ -411,7 +411,7 @@ export default function Assets() {
     return (
         <div className="space-y-8">
             {/* Overview Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 <SummaryCard title="Total Assets" amount={totalAssets} subtext="Current estimated value" />
                 {yearToDateChange !== null && baselineDateForChanges && (
                     <SummaryCard title="Value Change" amount={yearToDateChange} subtext={`Since ${baselineDateForChanges}`} />

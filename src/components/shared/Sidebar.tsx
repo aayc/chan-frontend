@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     HiOutlineCurrencyDollar,
     HiOutlineArrowsRightLeft,
@@ -6,7 +6,9 @@ import {
     HiOutlineChartBarSquare,
     HiOutlineBanknotes,
     HiOutlineUsers, // Added for People link
-    HiOutlineArrowLeftOnRectangle
+    HiOutlineArrowLeftOnRectangle,
+    HiOutlineBars3,
+    HiOutlineXMark
 } from 'react-icons/hi2';
 
 interface SidebarItemProps {
@@ -46,65 +48,111 @@ export const Sidebar: React.FC<SidebarProps> = ({
     appName = "Ledger Finance", // Default app name
     appIcon = <HiOutlineChartBarSquare className="text-3xl mr-2 text-green-500" /> // Default app icon
 }) => {
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    const handleNavigateAndCloseMobile = (view: string) => {
+        onNavigate(view);
+        setIsMobileMenuOpen(false);
+    };
+
     return (
-        <aside className="w-64 bg-white p-5 shadow-lg flex flex-col flex-shrink-0 h-screen sticky top-0 z-10">
-            <div>
-                <div className="mb-10 text-2xl font-bold flex items-center">
-                    {appIcon}
-                    {appName}
+        <>
+            {/* Mobile menu button */}
+            <div className="lg:hidden fixed top-4 left-4 z-50">
+                <button
+                    onClick={toggleMobileMenu}
+                    className="p-2 rounded-md bg-white shadow-lg border border-gray-200 hover:bg-gray-50"
+                >
+                    {isMobileMenuOpen ? (
+                        <HiOutlineXMark className="h-6 w-6 text-gray-600" />
+                    ) : (
+                        <HiOutlineBars3 className="h-6 w-6 text-gray-600" />
+                    )}
+                </button>
+            </div>
+
+            {/* Mobile backdrop */}
+            {isMobileMenuOpen && (
+                <div 
+                    className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
+
+            {/* Sidebar */}
+            <aside className={`
+                fixed lg:static inset-y-0 left-0 z-50 lg:z-10
+                w-64 bg-white shadow-lg flex flex-col flex-shrink-0 h-screen
+                transform transition-transform duration-300 ease-in-out
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            `}>
+                <div className="p-5">
+                    <div className="mb-10 text-xl lg:text-2xl font-bold flex items-center">
+                        <span className="text-2xl lg:text-3xl mr-2">
+                            {appIcon}
+                        </span>
+                        <span className="hidden sm:block">{appName}</span>
+                    </div>
+                    <nav>
+                        <ul className="space-y-1">
+                            <SidebarItem
+                                title="Expenses"
+                                isActive={activeView === 'expenses'}
+                                onClick={() => handleNavigateAndCloseMobile('expenses')}
+                                icon={<HiOutlineCurrencyDollar />}
+                            />
+                            <SidebarItem
+                                title="Transactions"
+                                isActive={activeView === 'transactions'}
+                                onClick={() => handleNavigateAndCloseMobile('transactions')}
+                                icon={<HiOutlineArrowsRightLeft />}
+                            />
+                            <SidebarItem
+                                title="Assets"
+                                isActive={activeView === 'assets'}
+                                onClick={() => handleNavigateAndCloseMobile('assets')}
+                                icon={<HiOutlineBuildingOffice2 />}
+                            />
+                            <SidebarItem
+                                title="Income"
+                                isActive={activeView === 'income'}
+                                onClick={() => handleNavigateAndCloseMobile('income')}
+                                icon={<HiOutlineBanknotes />}
+                            />
+                            <SidebarItem
+                                title="Trends"
+                                isActive={activeView === 'trends'}
+                                onClick={() => handleNavigateAndCloseMobile('trends')}
+                                icon={<HiOutlineChartBarSquare />}
+                            />
+                            <SidebarItem
+                                title="People"
+                                isActive={activeView === 'people'}
+                                onClick={() => handleNavigateAndCloseMobile('people')}
+                                icon={<HiOutlineUsers />}
+                            />
+                        </ul>
+                    </nav>
                 </div>
-                <nav>
-                    <ul className="space-y-1">
+                {/* Spacer to push logout to bottom */}
+                <div className="mt-auto p-5">
+                    {currentUser && (
                         <SidebarItem
-                            title="Expenses"
-                            isActive={activeView === 'expenses'}
-                            onClick={() => onNavigate('expenses')}
-                            icon={<HiOutlineCurrencyDollar />}
+                            title="Sign out"
+                            onClick={() => {
+                                onSignOut();
+                                setIsMobileMenuOpen(false);
+                            }}
+                            icon={<HiOutlineArrowLeftOnRectangle />}
+                            className="hover:bg-red-100 hover:text-red-700 text-red-500"
                         />
-                        <SidebarItem
-                            title="Transactions"
-                            isActive={activeView === 'transactions'}
-                            onClick={() => onNavigate('transactions')}
-                            icon={<HiOutlineArrowsRightLeft />}
-                        />
-                        <SidebarItem
-                            title="Assets"
-                            isActive={activeView === 'assets'}
-                            onClick={() => onNavigate('assets')}
-                            icon={<HiOutlineBuildingOffice2 />}
-                        />
-                        <SidebarItem
-                            title="Income"
-                            isActive={activeView === 'income'}
-                            onClick={() => onNavigate('income')}
-                            icon={<HiOutlineBanknotes />}
-                        />
-                        <SidebarItem
-                            title="Trends"
-                            isActive={activeView === 'trends'}
-                            onClick={() => onNavigate('trends')}
-                            icon={<HiOutlineChartBarSquare />}
-                        />
-                        <SidebarItem
-                            title="People"
-                            isActive={activeView === 'people'}
-                            onClick={() => onNavigate('people')}
-                            icon={<HiOutlineUsers />}
-                        />
-                    </ul>
-                </nav>
-            </div>
-            {/* Spacer to push logout to bottom */}
-            <div className="mt-auto">
-                {currentUser && (
-                    <SidebarItem
-                        title="Sign out"
-                        onClick={onSignOut} // Direct pass-through
-                        icon={<HiOutlineArrowLeftOnRectangle />}
-                        className="hover:bg-red-100 hover:text-red-700 text-red-500"
-                    />
-                )}
-            </div>
-        </aside>
+                    )}
+                </div>
+            </aside>
+        </>
     );
 }; 

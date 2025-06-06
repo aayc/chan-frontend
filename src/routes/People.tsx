@@ -241,7 +241,7 @@ export default function People() {
                     appName="People"
                     appIcon={<HiOutlineUserGroup className="text-3xl mr-2 text-blue-500" />}
                 />
-                <div className="flex-1 p-10 flex flex-col overflow-hidden">
+                <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-16 lg:pt-10 flex flex-col overflow-hidden">
                     <Interactions
                         interactions={actionableInteractions}
                         onUpdateInteraction={handleUpdateInteraction}
@@ -249,8 +249,8 @@ export default function People() {
                     />
 
                     {/* Filter and Sort Controls */}
-                    <div className="mb-6 p-4 bg-white rounded-lg shadow">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <div className="mb-4 lg:mb-6 p-3 lg:p-4 bg-white rounded-lg shadow">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 items-end">
                             <div>
                                 <label htmlFor="sortOption" className="block text-sm font-medium text-gray-700 mb-2">Sort by</label>
                                 <select
@@ -277,7 +277,7 @@ export default function People() {
                                     ))}
                                 </select>
                             </div>
-                            <div>
+                            <div className="sm:col-span-2 lg:col-span-1">
                                 <label htmlFor="filterCompanyPopover" className="block text-sm font-medium text-gray-700 mb-1">Filter by Company</label>
                                 <CheckboxPopoverFilter
                                     label="Select Companies"

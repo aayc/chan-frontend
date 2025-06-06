@@ -428,7 +428,7 @@ export default function Expenses() {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
                 <SummaryCard title="Total Saved" amount={totalSaved} subtext="Income - expenses" />
                 <SummaryCard title="Total Budget" amount={totalBudget} subtext="Monthly allocation" />
                 <SummaryCard title="Total Spent" amount={totalSpent} subtext="This month" />
@@ -437,7 +437,7 @@ export default function Expenses() {
             </div>
 
             {/* New Layout for Monthly, Top Spend, and Trends */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
                 {/* Monthly Budgets Card (takes 2 columns on large screens) */}
                 <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow">
                     <h2 className="text-xl font-semibold mb-6 text-gray-800">Monthly Budgets</h2>
@@ -465,7 +465,7 @@ export default function Expenses() {
                                         sideOffset={5}
                                     >
                                         {expense.formattedCategory && (
-                                            <div className="" style={{ width: '600px', maxHeight: '400px', overflowY: 'auto' }}>
+                                            <div className="w-full max-w-md sm:max-w-lg lg:max-w-2xl max-h-96 overflow-y-auto">
                                                 <Transactions
                                                     initialMonthFilter={selectedMonth}
                                                     initialAccountFilter={`joint:expenses:${expense.formattedCategory}`}
@@ -553,7 +553,7 @@ export default function Expenses() {
                                         sideOffset={5}
                                     >
                                         {expense.formattedCategory && (
-                                            <div className="" style={{ width: '600px', maxHeight: '400px', overflowY: 'auto' }}>
+                                            <div className="w-full max-w-md sm:max-w-lg lg:max-w-2xl max-h-96 overflow-y-auto">
                                                 <Transactions
                                                     initialAccountFilter={`joint:expenses:${expense.formattedCategory}`}
                                                 // No initialMonthFilter, so it shows all transactions for the account

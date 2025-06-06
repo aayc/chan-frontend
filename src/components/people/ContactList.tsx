@@ -28,25 +28,25 @@ const ContactList: React.FC<ContactListProps> = ({ contacts, onShowToast, onTogg
 
     return (
         <div className="flex flex-col flex-grow min-h-0">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold text-gray-800">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 lg:mb-6 gap-3 sm:gap-0">
+                <h2 className="text-xl lg:text-2xl font-semibold text-gray-800">
                     All Contacts ({filteredContacts.length})
                 </h2>
-                <div className="flex items-center space-x-3">
-                    <div className="relative">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:space-x-3">
+                    <div className="relative flex-1 sm:flex-none">
                         <input
                             type="text"
                             placeholder="Search by name..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm w-64"
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm w-full sm:w-64"
                         />
                         <HiOutlineSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                     </div>
                     <button
                         onClick={() => setIsCreateContactModalOpen(true)}
                         title="Add New Contact"
-                        className="p-2 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-50 transition-colors duration-150 flex items-center justify-center"
+                        className="p-2 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-50 transition-colors duration-150 flex items-center justify-center self-end sm:self-auto"
                     >
                         <HiOutlineUserPlus className="h-6 w-6" />
                     </button>

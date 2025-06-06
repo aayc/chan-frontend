@@ -123,10 +123,10 @@ const Transactions: React.FC<TransactionsProps> = ({ initialMonthFilter, initial
     };
 
     return (
-        <div className="transactions-container p-5">
-            <div className="flex justify-between items-center mb-5">
-                <h2 className="text-2xl font-semibold">Transactions</h2>
-                <div className="flex items-center gap-2.5">
+        <div className="transactions-container p-3 sm:p-5">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-5 gap-3">
+                <h2 className="text-xl sm:text-2xl font-semibold">Transactions</h2>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
                     <SelectMenu
                         value={sortOption}
                         onValueChange={setSortOption}
@@ -146,7 +146,7 @@ const Transactions: React.FC<TransactionsProps> = ({ initialMonthFilter, initial
                         align="end"
                         sideOffset={10}
                     >
-                        <div className="p-2 w-72">
+                        <div className="p-2 w-64 sm:w-72">
                             <div className="mb-3">
                                 <h5 className="text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">By Month</h5>
                                 <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
@@ -201,7 +201,7 @@ const Transactions: React.FC<TransactionsProps> = ({ initialMonthFilter, initial
                     return (
                         <div
                             key={index}
-                            className="transaction-card mb-5 p-4 border border-gray-300 rounded-lg shadow-md bg-white"
+                            className="transaction-card mb-3 sm:mb-5 p-3 sm:p-4 border border-gray-300 rounded-lg shadow-md bg-white"
                         >
                             <div className="flex justify-between items-center">
                                 <h3 className="mt-0 mb-2.5 text-lg font-medium">
