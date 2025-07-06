@@ -10,12 +10,12 @@ export default function LedgerRouteContent() {
 
     const getActiveView = () => {
         const path = location.pathname;
-        if (path.includes('/expenses')) return 'expenses';
-        if (path.includes('/transactions')) return 'transactions';
-        if (path.includes('/assets')) return 'assets';
-        if (path.includes('/income')) return 'income';
-        if (path.includes('/people')) return 'people';
-        if (path.includes('/trends')) return 'trends';
+        if (path === '/expenses' || path === '/') return 'expenses';
+        if (path === '/transactions') return 'transactions';
+        if (path === '/assets') return 'assets';
+        if (path === '/income') return 'income';
+        if (path === '/people') return 'people';
+        if (path === '/trends') return 'trends';
         return null;
     };
 
@@ -33,7 +33,7 @@ export default function LedgerRouteContent() {
         if (view === 'people') {
             navigate('/people');
         } else {
-            navigate(`/ledger/${view}`);
+            navigate(`/${view}`);
         }
     };
 

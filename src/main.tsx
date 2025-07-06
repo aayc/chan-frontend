@@ -7,7 +7,6 @@ import { AuthProvider } from './AuthContext';
 
 import Root from './routes/Root';
 import ErrorPage from './routes/ErrorPage';
-import Home from './routes/Home';
 import Ledger from './routes/Ledger';
 import Expenses from './components/ledger/Expenses';
 import Transactions from './components/ledger/Transactions';
@@ -44,35 +43,46 @@ const router = createBrowserRouter([
         element: <Root />,
         errorElement: <ErrorPage />,
         children: [
-            { index: true, element: <Home /> },
+            { 
+                index: true, 
+                element: <Navigate to="/expenses" replace />
+            },
             {
                 element: <ProtectedRoute />,
                 children: [
                     {
-                        path: 'ledger',
+                        path: 'expenses',
                         element: <Ledger />,
                         children: [
-                            { index: true, element: <Navigate to="/ledger/expenses" replace /> },
-                            {
-                                path: 'expenses',
-                                element: <Expenses />,
-                            },
-                            {
-                                path: 'transactions',
-                                element: <Transactions />,
-                            },
-                            {
-                                path: 'assets',
-                                element: <Assets />,
-                            },
-                            {
-                                path: 'income',
-                                element: <Income />,
-                            },
-                            {
-                                path: 'trends',
-                                element: <TrendsPage />,
-                            },
+                            { index: true, element: <Expenses /> },
+                        ],
+                    },
+                    {
+                        path: 'transactions',
+                        element: <Ledger />,
+                        children: [
+                            { index: true, element: <Transactions /> },
+                        ],
+                    },
+                    {
+                        path: 'assets',
+                        element: <Ledger />,
+                        children: [
+                            { index: true, element: <Assets /> },
+                        ],
+                    },
+                    {
+                        path: 'income',
+                        element: <Ledger />,
+                        children: [
+                            { index: true, element: <Income /> },
+                        ],
+                    },
+                    {
+                        path: 'trends',
+                        element: <Ledger />,
+                        children: [
+                            { index: true, element: <TrendsPage /> },
                         ],
                     },
                     {
